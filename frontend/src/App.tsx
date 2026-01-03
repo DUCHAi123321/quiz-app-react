@@ -6,6 +6,7 @@ import RegisterPage from './pages/auth/RegisterPage'
 import AboutPage from '@/pages/AboutPage'
 import ContactPage from '@/pages/ContactPage'
 import HomePage from '@/pages/HomePage'
+import QuizzesPage from '@/pages/QuizzesPage'
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
       {/* Nơi định nghĩa các luồng đi của trang web */}
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/quizzes" element={<div className="p-4">Danh sách bài thi (Quiz List)</div>} />
+        <Route path="/quizzes" element={<QuizzesPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
