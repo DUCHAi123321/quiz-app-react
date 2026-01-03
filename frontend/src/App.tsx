@@ -5,13 +5,14 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import AboutPage from '@/pages/AboutPage'
 import ContactPage from '@/pages/ContactPage'
+import HomePage from '@/pages/HomePage'
 
 function App() {
   return (
     <>
       {/* Nơi định nghĩa các luồng đi của trang web */}
       <Routes>
-        <Route path="/" element={<div className="p-4">Trang chủ (Home Page)</div>} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/quizzes" element={<div className="p-4">Danh sách bài thi (Quiz List)</div>} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />

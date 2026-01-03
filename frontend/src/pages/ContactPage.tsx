@@ -37,7 +37,8 @@ const ContactPage = () => {
   };
 
   return (
-      <MainLayout className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <MainLayout>
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto mb-32">
         {/* Page Title */}
         <div className="text-center mb-12">
@@ -160,7 +161,7 @@ const ContactPage = () => {
                 href="https://www.tiktok.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center "
               >
                 <img src={tiktokIcon} alt="TikTok" className="w-5 h-5" />
               </a>
@@ -168,7 +169,7 @@ const ContactPage = () => {
                 href="https://www.facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center "
               >
                 <img src={facebookIcon} alt="Facebook" className="w-5 h-5" />
               </a>
@@ -176,7 +177,7 @@ const ContactPage = () => {
                 href="https://www.youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center"
               >
                 <img src={youtubeIcon} alt="YouTube" className="w-5 h-5" />
               </a>
@@ -184,7 +185,7 @@ const ContactPage = () => {
                 href="https://www.linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center"
               >
                 <img src={linkinIcon} alt="LinkedIn" className="w-5 h-5" />
               </a>
@@ -192,8 +193,9 @@ const ContactPage = () => {
           </div>
         </div>
       </div>
+      </div>
     </MainLayout>
-    );
+  );
 };
 
 
