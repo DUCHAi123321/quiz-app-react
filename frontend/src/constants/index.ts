@@ -4,8 +4,8 @@ import janeAvatar from '@/assets/images/Jane.png';
 import johnSAvatar from '@/assets/images/JohnS.png';
 
 export const BUTTON_STYLES = {
-  primary: 'bg-primary hover:bg-primary-hover text-white',
-  secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
+  primary: 'bg-blue-500 hover:bg-blue-600 text-white',
+  secondary: 'border border-gray-300 hover:bg-gray-50 text-gray-700 bg-white',
   danger: 'bg-red-500 hover:bg-red-600 text-white',
 } as const;
 

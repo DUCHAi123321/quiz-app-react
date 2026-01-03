@@ -163,24 +163,16 @@ const UserManagementPage = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-between gap-3">
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
-            >
-              <img src={plusIcon} alt="Create" className="w-4 h-4 brightness-0 invert" /> Create
-            </button>
+            <Button icon={plusIcon} iconAlt="Create" size="md">
+              Create
+            </Button>
             <div className="flex gap-3">
-              <button
-                onClick={handleClear}
-                className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
-              >
-                <img src={reloadIcon} alt="Clear" className="w-4 h-4" /> Clear
-              </button>
-              <button
-                onClick={handleSearch}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
-              >
-                <img src={searchIcon} alt="Search" className="w-4 h-4 brightness-0 invert" /> Search
-              </button>
+              <Button onClick={handleClear} variant="secondary" icon={reloadIcon} iconAlt="Clear" size="md">
+                Clear
+              </Button>
+              <Button onClick={handleSearch} icon={searchIcon} iconAlt="Search" size="md">
+                Search
+              </Button>
             </div>
           </div>
         </div>
@@ -430,18 +422,12 @@ const UserManagementPage = () => {
 
           {/* Form Actions */}
           <div className="flex justify-end gap-3 mt-6">
-            <button
-              onClick={handleCancel}
-              className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-2 rounded-md flex items-center gap-2 transition-colors"
-            >
-              <img src={reloadIcon} alt="Cancel" className="w-4 h-4" /> Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md flex items-center gap-2 transition-colors"
-            >
-              <img src={saveIcon} alt="Save" className="w-4 h-4 brightness-0 invert" /> Save
-            </button>
+            <Button onClick={handleCancel} variant="secondary" icon={reloadIcon} iconAlt="Cancel" size="lg">
+              Cancel
+            </Button>
+            <Button onClick={handleSave} icon={saveIcon} iconAlt="Save" size="lg">
+              Save
+            </Button>
           </div>
         </div>
       </div>
