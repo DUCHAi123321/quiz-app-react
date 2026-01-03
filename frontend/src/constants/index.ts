@@ -13,8 +13,8 @@ export const ERROR_MESSAGES = {
     buttonText: 'Back to Home',
   },
   403: {
-    title: 'Access Forbidden',
-    message: "You don't have permission to access this page. Please contact your administrator if you believe this is an error.",
+    title: 'Forbidden',
+    message: "You don't have permission to access this page.",
     buttonText: 'Back to Home',
   },
 } as const;
@@ -24,6 +24,8 @@ export const ROUTES = {
   HOME: '/',
   QUIZZES: '/quizzes',
   LOGIN: '/auth/login',
+  REGISTER: '/auth/register',
+  FORGOT_PASSWORD: '/auth/forgot-password',
   ADMIN_DASHBOARD: '/admin/dashboard',
   FORBIDDEN: '/forbidden',
 } as const;
