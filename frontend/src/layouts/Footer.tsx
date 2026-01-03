@@ -7,12 +7,12 @@ import locationIcon from '@/assets/icons/location-icon.png';
 
 const Footer = () => {
   return (
-    <footer className="bg-white border-t border-gray-200 py-8 px-4">
-      <div className="container mx-auto max-w-6xl">
-        <div className="grid md:grid-cols-3 gap-8">
+    <footer className="bg-white border-t border-gray-200 py-3 px-4">
+      <div className="container mx-auto max-w-7xl">
+        <div className="grid md:grid-cols-3 gap-2">
           {/* Logo & Description */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-2">
               <img src={logo} alt="Logo" className="w-6 h-6" />
               <span className="text-xl font-bold text-gray-800">Quizzes</span>
             </div>
@@ -23,8 +23,8 @@ const Footer = () => {
 
           {/* Menu */}
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Menu</h3>
-            <ul className="space-y-2">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Menu</h3>
+            <ul className="space-y-1">
               <li>
                 <Link to={ROUTES.HOME} className="text-sm text-primary hover:underline">
                   Home
@@ -50,8 +50,8 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Contact</h3>
-            <div className="space-y-2 text-sm">
+            <h3 className="text-lg font-bold text-gray-800 mb-2">Contact</h3>
+            <div className="space-y-1 text-sm">
               <div className="flex items-center gap-2">
                 <img src={emailIcon} alt="Email" className="w-4 h-4" />
                 <a href={`mailto:${CONTACT_INFO.email}`} className="text-primary hover:underline">
@@ -79,7 +79,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
+        <div className="mt-3 pt-2 border-t border-gray-200 text-center text-sm text-gray-600">
           <p>© May 2024 - ReactJS 19</p>
         </div>
       </div>

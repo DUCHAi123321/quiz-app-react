@@ -4,6 +4,7 @@ import ForbiddenPage from './pages/error/ForbiddenPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import AboutPage from '@/pages/AboutPage'
+import ContactPage from '@/pages/ContactPage'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<div className="p-4">Trang chủ (Home Page)</div>} />
         <Route path="/quizzes" element={<div className="p-4">Danh sách bài thi (Quiz List)</div>} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         
