@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import NotFoundPage from './pages/error/NotFoundPage'
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
         <Route path="/auth/login" element={<div className="p-4">Trang đăng nhập (Login)</div>} />
         
         {/* Route 404 - Khi user nhập linh tinh */}
-        <Route path="*" element={<div className="p-4 text-red-500">404 - Không tìm thấy trang</div>} />
+        <Route path="/auth/404" element={<NotFoundPage />} />
       </Routes>
     </>
   )
