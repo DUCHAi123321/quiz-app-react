@@ -26,7 +26,7 @@ const QuizzesPage = () => {
       sort: 'createdAt', 
       direction: 'DESC' 
     });
-  }, [currentPage]);
+  }, [currentPage, fetchQuizzes]);
 
   const handleStartQuiz = (quizId: string) => {
     navigate(`/quizzes/${quizId}`);
@@ -41,7 +41,14 @@ const QuizzesPage = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    globalThis.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper function to determine quiz difficulty
+  const getDifficulty = (questionCount: number): string => {
+    if (questionCount > 20) return 'Hard';
+    if (questionCount > 10) return 'Medium';
+    return 'Easy';
   };
 
   return (
@@ -83,9 +90,9 @@ const QuizzesPage = () => {
             </div>
 
             {/* Quiz Cards Grid */}
-            {loading ? (
-              <SkeletonList count={9} />
-            ) : quizzes && quizzes.content.length > 0 ? (
+            {loading && <SkeletonList count={9} />}
+            
+            {!loading && quizzes && quizzes.content.length > 0 && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {quizzes.content.map((quiz, index) => (
@@ -95,7 +102,7 @@ const QuizzesPage = () => {
                       title={quiz.title}
                       description={quiz.description}
                       duration={`${quiz.durationMinutes}m`}
-                      difficulty={quiz.questions.length > 20 ? 'Hard' : quiz.questions.length > 10 ? 'Medium' : 'Easy'}
+                      difficulty={getDifficulty(quiz.questions.length)}
                       thumbnail={thumbnails[index % thumbnails.length]}
                       onStart={() => handleStartQuiz(quiz.id)}
                     />
@@ -108,17 +115,21 @@ const QuizzesPage = () => {
                     <Pagination
                       currentPage={currentPage}
                       totalPages={quizzes.totalPages}
+                      totalItems={quizzes.totalElements}
+                      itemsPerPage={9}
                       onPageChange={handlePageChange}
+                      onItemsPerPageChange={() => {}}
                     />
                   </div>
                 )}
               </>
-            ) : (
+            )}
+            
+            {!loading && (!quizzes || quizzes.content.length === 0) && (
               <div className="text-center py-12">
                 <p className="text-gray-600">No quizzes available at the moment.</p>
               </div>
             )}
-            </div>
           </div>
         </section>
       </div>
