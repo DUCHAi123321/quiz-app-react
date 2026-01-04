@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
 import Button from '@/components/Button';
 import { useQuiz } from '@/hooks/useQuiz';
+import { SkeletonList } from '@/components/Skeleton';
 import quizIllustration from '@/assets/images/quiz-bg-01.png';
 import map1 from '@/assets/images/map.png';
 import map2 from '@/assets/images/map2.png';
@@ -27,6 +28,13 @@ const HomePage = () => {
 
   const handleTakeQuiz = () => {
     navigate('/quizzes');
+  };
+
+  // Helper function to determine quiz difficulty based on question count
+  const getDifficulty = (questionCount: number): string => {
+    if (questionCount > 20) return 'Hard';
+    if (questionCount > 10) return 'Medium';
+    return 'Easy';
   };
 
   return (
@@ -71,11 +79,9 @@ const HomePage = () => {
           </div>
 
           {/* Quiz Cards Grid */}
-          {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Loading quizzes...</p>
-            </div>
-          ) : quizzesData && quizzesData.content.length > 0 ? (
+          {loading && <SkeletonList count={3} />}
+          
+          {!loading && quizzesData && quizzesData.content.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {quizzesData.content.map((quiz, index) => (
                 <QuizCard
@@ -84,13 +90,15 @@ const HomePage = () => {
                   title={quiz.title}
                   description={quiz.description}
                   duration={`${quiz.durationMinutes}m`}
-                  difficulty={quiz.questions.length > 20 ? 'Hard' : quiz.questions.length > 10 ? 'Medium' : 'Easy'}
+                  difficulty={getDifficulty(quiz.questions.length)}
                   thumbnail={thumbnails[index % thumbnails.length]}
                   onStart={() => handleStartQuiz(quiz.id)}
                 />
               ))}
             </div>
-          ) : (
+          )}
+          
+          {!loading && (!quizzesData || quizzesData.content.length === 0) && (
             <div className="text-center py-12">
               <p className="text-gray-600">No quizzes available at the moment.</p>
             </div>

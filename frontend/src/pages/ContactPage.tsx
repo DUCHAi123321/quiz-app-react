@@ -27,7 +27,6 @@ const ContactPage = () => {
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     
-    // TODO: Handle form submission with API
     console.log('Form submitted:', data);
     
     // Mock delay
@@ -74,10 +73,11 @@ const ContactPage = () => {
               />
 
               <div className="mb-4">
-                <label className="block text-gray-700 font-medium mb-2">
+                <label htmlFor="contact-message" className="block text-gray-700 font-medium mb-2">
                   Message
                 </label>
                 <textarea
+                  id="contact-message"
                   placeholder="Enter you message"
                   rows={5}
                   className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical ${

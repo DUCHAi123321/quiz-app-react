@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
 import Pagination from '@/components/Pagination';
 import { useQuiz } from '@/hooks/useQuiz';
+import { SkeletonList } from '@/components/Skeleton';
 import map1 from '@/assets/images/map.png';
 import map2 from '@/assets/images/map2.png';
 import map3 from '@/assets/images/map3.png';
@@ -83,9 +84,7 @@ const QuizzesPage = () => {
 
             {/* Quiz Cards Grid */}
             {loading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Loading quizzes...</p>
-              </div>
+              <SkeletonList count={9} />
             ) : quizzes && quizzes.content.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

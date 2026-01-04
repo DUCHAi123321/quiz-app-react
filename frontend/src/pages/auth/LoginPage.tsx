@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Toaster } from 'react-hot-toast';
@@ -10,6 +10,7 @@ import { loginSchema, type LoginFormData } from '@/schemas/formSchemas';
 import { useAuth } from '@/hooks/useAuth';
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const { login, isLoading } = useAuth();
 
   const {
@@ -61,7 +62,7 @@ const LoginPage = () => {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => window.location.href = ROUTES.HOME}
+              onClick={() => navigate(ROUTES.HOME)}
               className="flex-1"
               disabled={isLoading}
             >

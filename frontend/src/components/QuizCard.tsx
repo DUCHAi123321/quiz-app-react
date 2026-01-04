@@ -8,7 +8,7 @@ interface QuizCardProps {
   onStart: () => void;
 }
 
-const QuizCard = ({ title, description, duration, difficulty, thumbnail, onStart }: QuizCardProps) => {
+const QuizCard = ({ id, title, description, duration, difficulty, thumbnail, onStart }: QuizCardProps) => {
   const getDifficultyColor = (level: string) => {
     switch (level.toLowerCase()) {
       case 'easy':

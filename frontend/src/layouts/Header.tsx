@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants';
 import { useState, useRef, useEffect } from 'react';
+import { useAuthContext } from '@/contexts/AuthContext';
 import logo from '@/assets/icons/logo.png';
 import userIcon from '@/assets/images/avatar.png';
 
 const Header = () => {
+  const { logout, user } = useAuthContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -63,7 +65,7 @@ const Header = () => {
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 border border-gray-200">
                 {/* User Name */}
                 <div className="px-4 py-3 border-b border-gray-200">
-                  <p className="text-gray-800 font-medium">Cong Dinh</p>
+                  <p className="text-gray-800 font-medium">{user?.fullName || 'User'}</p>
                 </div>
 
                 {/* Menu Items */}
@@ -76,10 +78,9 @@ const Header = () => {
                 </Link>
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setIsDropdownOpen(false);
-                    // TODO: Implement logout logic
-                    console.log('Logout clicked');
+                    await logout();
                   }}
                   className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors"
                 >

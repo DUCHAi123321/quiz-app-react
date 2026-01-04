@@ -1,11 +1,14 @@
 import { z } from 'zod';
 
+// Email regex pattern for validation
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // Login validation schema
 export const loginSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
-    .email({ message: 'Invalid email format' }),
+    .regex(EMAIL_REGEX, 'Invalid email format'),
   password: z
     .string()
     .min(1, 'Password is required')
@@ -24,7 +27,7 @@ export const registerSchema = z
     email: z
       .string()
       .min(1, 'Email is required')
-      .email({ message: 'Invalid email format' }),
+      .regex(EMAIL_REGEX, 'Invalid email format'),
     fullName: z
       .string()
       .min(1, 'Full name is required')
@@ -58,7 +61,7 @@ export const contactSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
-    .email({ message: 'Invalid email format' }),
+    .regex(EMAIL_REGEX, 'Invalid email format'),
   message: z
     .string()
     .min(1, 'Message is required')

@@ -1,7 +1,10 @@
-export enum RoleEnum {
-  ROLE_ADMIN = 'ROLE_ADMIN',
-  ROLE_USER = 'ROLE_USER',
-}
+// Role types as const object (better than enum with erasableSyntaxOnly)
+export const RoleEnum = {
+  ROLE_ADMIN: 'ROLE_ADMIN',
+  ROLE_USER: 'ROLE_USER',
+} as const;
+
+export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
 
 export interface RoleResponse {
   id: string;

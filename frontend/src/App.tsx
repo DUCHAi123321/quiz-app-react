@@ -1,5 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { AuthProvider } from '@/contexts/AuthContext'
 import HomePage from '@/pages/HomePage'
 import QuizzesPage from '@/pages/QuizzesPage'
 import AboutPage from '@/pages/AboutPage'
@@ -31,28 +34,71 @@ const PageLoader = () => (
 
 function App() {
   return (
-    <Suspense fallback={<PageLoader />}>
-      {/* Nơi định nghĩa các luồng đi của trang web */}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/quizzes" element={<QuizzesPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/management" element={<QuizManagementPage />} />
-        <Route path="/management/quiz" element={<QuizManagementPage />} />
-        <Route path="/management/question" element={<QuestionManagementPage />} />
-        <Route path="/management/user" element={<UserManagementPage />} />
-        <Route path="/management/role" element={<RoleManagementPage />} />
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/auth/register" element={<RegisterPage />} />
+    <AuthProvider>
+      <ErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          {/* Nơi định nghĩa các luồng đi của trang web */}
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/quizzes" element={<QuizzesPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            
+            {/* Auth Routes */}
+            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/register" element={<RegisterPage />} />
+            
+            {/* Protected Admin Routes - Require ADMIN role */}
+            <Route
+              path="/management"
+              element={
+                <ProtectedRoute requireRoles={['ADMIN']}>
+                  <QuizManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/quiz"
+              element={
+                <ProtectedRoute requireRoles={['ADMIN']}>
+                  <QuizManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/question"
+              element={
+                <ProtectedRoute requireRoles={['ADMIN']}>
+                  <QuestionManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/user"
+              element={
+                <ProtectedRoute requireRoles={['ADMIN']}>
+                  <UserManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/role"
+              element={
+                <ProtectedRoute requireRoles={['ADMIN']}>
+                  <RoleManagementPage />
+                </ProtectedRoute>
+              }
+            />
         
-        {/* Route 403 - Không có quyền truy cập */}
-        <Route path="/forbidden" element={<ForbiddenPage />} />
-        
-        {/* Route 404 - Khi user nhập linh tinh */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Suspense>
+            
+            {/* Error Routes */}
+            <Route path="/forbidden" element={<ForbiddenPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    </AuthProvider>
   )
 }
 
