@@ -61,6 +61,9 @@ public class Quiz {
     @Builder.Default
     private Boolean active = true;
 
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
+
     @ManyToMany
     @JoinTable(
             name = "quiz_questions",

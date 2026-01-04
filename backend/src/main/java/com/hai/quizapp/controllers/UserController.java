@@ -52,7 +52,7 @@ public class UserController {
                 .body(ApiResponse.created(response, "User created successfully"));
     }
 
-    @Operation(summary = "Get all users", description = "Retrieves all active users with pagination")
+    @Operation(summary = "Get all users", description = "Retrieves users with pagination and optional search")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponseDTO<UserResponse>>> getAllUsers(
             @Parameter(description = "Page number (0-based)")
@@ -62,11 +62,22 @@ public class UserController {
             @Parameter(description = "Sort field")
             @RequestParam(defaultValue = "createdAt") String sort,
             @Parameter(description = "Sort direction")
-            @RequestParam(defaultValue = "DESC") String direction) {
+            @RequestParam(defaultValue = "DESC") String direction,
+            @Parameter(description = "Search by name (full name)")
+            @RequestParam(required = false) String name,
+            @Parameter(description = "Filter by active status")
+            @RequestParam(required = false) Boolean active) {
 
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-        Page<UserResponse> users = userService.getAllUsers(pageable);
+
+        Page<UserResponse> users;
+        if (name != null || active != null) {
+            users = userService.searchUsers(name, active, pageable);
+        } else {
+            users = userService.getAllUsers(pageable);
+        }
+
         PageResponseDTO<UserResponse> response = PageResponseDTO.from(users);
         return ResponseEntity.ok(ApiResponse.success(response));
     }

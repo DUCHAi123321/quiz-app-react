@@ -6,6 +6,7 @@ export interface QuizResponse {
   description: string;
   durationMinutes: number;
   active: boolean;
+  thumbnailUrl?: string;
   questions: QuestionResponse[];
   createdAt: string;
   updatedAt: string;
@@ -15,6 +16,8 @@ export interface QuizRequest {
   title: string;
   description?: string;
   durationMinutes: number;
+  active?: boolean;
+  thumbnailUrl?: string;
   questionIds?: string[];
 }
 

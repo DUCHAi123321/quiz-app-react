@@ -8,22 +8,44 @@ import { useQuestion } from '@/hooks/useQuestion';
 import { QuestionType } from '@/types/question';
 import type { QuestionRequest, AnswerRequest } from '@/types/question';
 import toast, { Toaster } from 'react-hot-toast';
+import editIcon from '@/assets/icons/edit-icon.png';
+import deleteIcon from '@/assets/icons/delete-icon.png';
+import plusIcon from '@/assets/icons/plus-icon.png';
+import reloadIcon from '@/assets/icons/reload-icon.png';
+import searchIcon from '@/assets/icons/search-icon.png';
+import saveIcon from '@/assets/icons/save-icon.png';
 
 const QuestionManagementPage = () => {
   const { loading, questions, fetchQuestions, createQuestion, updateQuestion, deleteQuestion } = useQuestion();
   
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
   
-  // Form fields
-  const [content, setContent] = useState('');
-  const [type, setType] = useState<QuestionType>(QuestionType.SINGLE_CHOICE);
-  const [score, setScore] = useState('1');
+  // Search fields
+  const [searchName, setSearchName] = useState('');
+  const [searchType, setSearchType] = useState('');
+  const [searchActive, setSearchActive] = useState(true);
+  
+  // Question form fields
+  const [questionContent, setQuestionContent] = useState('');
+  const [questionType, setQuestionType] = useState<QuestionType>(QuestionType.SINGLE_CHOICE);
+  const [questionActive, setQuestionActive] = useState(true);
+  const [showAnswerList, setShowAnswerList] = useState(false);
+  
+  // Answer form fields
+  const [answerDescription, setAnswerDescription] = useState('');
+  const [answerEmail, setAnswerEmail] = useState('');
+  const [answerIsCorrect, setAnswerIsCorrect] = useState(true);
+  const [answerActive, setAnswerActive] = useState(true);
+  
+  // Mock answers data (will be replaced with real data)
   const [answers, setAnswers] = useState<AnswerRequest[]>([
-    { content: '', isCorrect: false },
-    { content: '', isCorrect: false },
+    { content: 'Wright Brothers', isCorrect: true },
+    { content: 'Alexander Graham Bell', isCorrect: false },
+    { content: 'Albert Einstein', isCorrect: false },
+    { content: 'Charles Babbage', isCorrect: false },
   ]);
 
   // Fetch questions on mount and page change
@@ -40,72 +62,55 @@ const QuestionManagementPage = () => {
     });
   };
 
-  const handleAddAnswer = () => {
-    setAnswers([...answers, { content: '', isCorrect: false }]);
+  const handleSearch = () => {
+    // Implement search logic
+    loadQuestions();
   };
 
-  const handleRemoveAnswer = (index: number) => {
-    if (answers.length > 2) {
-      setAnswers(answers.filter((_, i) => i !== index));
-    } else {
-      toast.error('At least 2 answers are required');
-    }
+  const handleClearSearch = () => {
+    setSearchName('');
+    setSearchType('');
+    setSearchActive(true);
+    loadQuestions();
   };
 
-  const handleAnswerChange = (index: number, field: 'content' | 'isCorrect', value: string | boolean) => {
-    const newAnswers = [...answers];
-    newAnswers[index] = { ...newAnswers[index], [field]: value };
-    setAnswers(newAnswers);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validation
-    if (answers.length < 2) {
-      toast.error('At least 2 answers are required');
-      return;
-    }
-
-    const hasCorrectAnswer = answers.some(a => a.isCorrect);
-    if (!hasCorrectAnswer) {
-      toast.error('At least one answer must be marked as correct');
+  const handleCreateQuestion = async () => {
+    if (!questionContent.trim()) {
+      toast.error('Question content is required');
       return;
     }
 
     const questionData: QuestionRequest = {
-      content,
-      type,
-      score: parseInt(score),
-      answers: answers.filter(a => a.content.trim() !== ''),
+      content: questionContent,
+      type: questionType,
+      score: 1,
+      answers: [],
     };
 
     try {
-      if (editingId) {
-        await updateQuestion(editingId, questionData);
+      if (editingQuestionId) {
+        await updateQuestion(editingQuestionId, questionData);
       } else {
         await createQuestion(questionData);
       }
-      resetForm();
+      resetQuestionForm();
       loadQuestions();
     } catch (error) {
       // Error handled in hook
     }
   };
 
-  const handleEdit = (id: string) => {
+  const handleEditQuestion = (id: string) => {
     const question = questions?.content.find(q => q.id === id);
     if (question) {
-      setContent(question.content);
-      setType(question.type);
-      setScore(question.score.toString());
-      setAnswers(question.answers.map(a => ({ content: a.content, isCorrect: a.isCorrect })));
-      setEditingId(id);
-      setIsFormOpen(true);
+      setQuestionContent(question.content);
+      setQuestionType(question.type);
+      setQuestionActive(question.isActive);
+      setEditingQuestionId(id);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteQuestion = async (id: string) => {
     if (confirm('Are you sure you want to delete this question?')) {
       try {
         await deleteQuestion(id);
@@ -116,134 +121,122 @@ const QuestionManagementPage = () => {
     }
   };
 
-  const resetForm = () => {
-    setContent('');
-    setType(QuestionType.SINGLE_CHOICE);
-    setScore('1');
-    setAnswers([
-      { content: '', isCorrect: false },
-      { content: '', isCorrect: false },
-    ]);
-    setEditingId(null);
-    setIsFormOpen(false);
+  const handleSaveAnswer = () => {
+    // Implement answer save logic
+    const newAnswer: AnswerRequest = {
+      content: answerDescription,
+      isCorrect: answerIsCorrect,
+    };
+    setAnswers([...answers, newAnswer]);
+    resetAnswerForm();
+  };
+
+  const handleEditAnswer = (index: number) => {
+    const answer = answers[index];
+    setAnswerDescription(answer.content);
+    setAnswerIsCorrect(answer.isCorrect || false);
+    setEditingAnswerId(index.toString());
+  };
+
+  const handleDeleteAnswer = (index: number) => {
+    setAnswers(answers.filter((_, i) => i !== index));
+  };
+
+  const resetQuestionForm = () => {
+    setQuestionContent('');
+    setQuestionType(QuestionType.SINGLE_CHOICE);
+    setQuestionActive(true);
+    setEditingQuestionId(null);
+    setShowAnswerList(false);
+  };
+
+  const resetAnswerForm = () => {
+    setAnswerDescription('');
+    setAnswerEmail('');
+    setAnswerIsCorrect(true);
+    setAnswerActive(true);
+    setEditingAnswerId(null);
   };
 
   return (
     <AdminLayout>
       <Toaster position="top-right" />
       <div className="p-6">
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Question Management</h1>
-          <Button 
-            variant="primary" 
-            onClick={() => setIsFormOpen(!isFormOpen)}
-          >
-            {isFormOpen ? 'Close Form' : '+ Add New Question'}
-          </Button>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Question Management</h1>
+
+        {/* Search Form */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Name</label>
+              <input
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                placeholder="Enter role name to search"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Type</label>
+              <select
+                value={searchType}
+                onChange={(e) => setSearchType(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              >
+                <option value="">Select type</option>
+                <option value={QuestionType.SINGLE_CHOICE}>Single Choice</option>
+                <option value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={searchActive}
+                onChange={(e) => setSearchActive(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded"
+              />
+              <span className="text-sm font-medium text-gray-700">Status</span>
+            </label>
+          </div>
+
+          <div className="flex justify-between">
+            <Button 
+              variant="primary" 
+              onClick={handleSearch}
+              icon={plusIcon}
+              iconAlt="Create"
+            >
+              Create
+            </Button>
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="secondary" 
+                onClick={handleClearSearch}
+                icon={reloadIcon}
+                iconAlt="Clear"
+              >
+                Clear
+              </Button>
+              <Button 
+                variant="primary" 
+                onClick={handleSearch}
+                icon={searchIcon}
+                iconAlt="Search"
+              >
+                Search
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Create/Edit Form */}
-        {isFormOpen && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">
-              {editingId ? 'Edit Question' : 'Create New Question'}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <Textarea
-                  label="Question Content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Enter question content"
-                  rows={3}
-                  required
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Question Type
-                    </label>
-                    <select
-                      value={type}
-                      onChange={(e) => setType(e.target.value as QuestionType)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value={QuestionType.SINGLE_CHOICE}>Single Choice</option>
-                      <option value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</option>
-                    </select>
-                  </div>
-                  
-                  <Input
-                    label="Score"
-                    type="number"
-                    value={score}
-                    onChange={(e) => setScore(e.target.value)}
-                    placeholder="Enter score"
-                    min="1"
-                    required
-                  />
-                </div>
-
-                {/* Answers Section */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Answers (min 2 required)
-                    </label>
-                    <Button type="button" variant="secondary" onClick={handleAddAnswer}>
-                      + Add Answer
-                    </Button>
-                  </div>
-
-                  {answers.map((answer, index) => (
-                    <div key={index} className="flex gap-2 mb-2">
-                      <input
-                        type="text"
-                        value={answer.content}
-                        onChange={(e) => handleAnswerChange(index, 'content', e.target.value)}
-                        placeholder={`Answer ${index + 1}`}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                      />
-                      <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                        <input
-                          type="checkbox"
-                          checked={answer.isCorrect}
-                          onChange={(e) => handleAnswerChange(index, 'isCorrect', e.target.checked)}
-                          className="w-4 h-4 text-blue-600"
-                        />
-                        <span className="text-sm text-gray-700">Correct</span>
-                      </label>
-                      {answers.length > 2 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAnswer(index)}
-                          className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-md"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-6">
-                <Button type="submit" variant="primary" disabled={loading}>
-                  {loading ? 'Saving...' : editingId ? 'Update Question' : 'Create Question'}
-                </Button>
-                <Button type="button" variant="secondary" onClick={resetForm}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Questions Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Question List Table */}
+        <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+          <h2 className="text-lg font-semibold p-4 border-b">Question List</h2>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -254,84 +247,303 @@ const QuestionManagementPage = () => {
                   Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Score
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Answers
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Action
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                     Loading...
                   </td>
                 </tr>
               ) : questions && questions.content.length > 0 ? (
                 questions.content.map((question) => (
                   <tr key={question.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-md truncate">
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-md">
                       {question.content}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {question.type.replace('_', ' ')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {question.score}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {question.answers.length}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        question.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {question.isActive ? 'Active' : 'Inactive'}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={question.isActive ? 'text-green-600' : 'text-red-600'}>
+                        {question.isActive ? 'Yes' : 'No'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => handleEdit(question.id)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        onClick={() => handleEditQuestion(question.id)}
+                        className="inline-block mr-2"
                       >
-                        Edit
+                        <img 
+                          src={editIcon} 
+                          alt="Edit" 
+                          className="w-5 h-5"
+                          style={{ filter: 'invert(38%) sepia(95%) saturate(1789%) hue-rotate(193deg) brightness(95%) contrast(101%)' }}
+                        />
                       </button>
                       <button
-                        onClick={() => handleDelete(question.id)}
-                        className="text-red-600 hover:text-red-900"
+                        onClick={() => handleDeleteQuestion(question.id)}
+                        className="inline-block"
                       >
-                        Delete
+                        <img 
+                          src={deleteIcon} 
+                          alt="Delete" 
+                          className="w-5 h-5"
+                          style={{ filter: 'invert(19%) sepia(98%) saturate(7466%) hue-rotate(359deg) brightness(95%) contrast(119%)' }}
+                        />
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                     No questions found
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {questions && questions.totalPages > 1 && (
+            <div className="p-4 border-t flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={questions.totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Pagination */}
-        {questions && questions.totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={questions.totalPages}
-              onPageChange={setCurrentPage}
-            />
+        {/* Add Question Form */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Add Question</h2>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Textarea
+                label="Content"
+                value={questionContent}
+                onChange={(e) => setQuestionContent(e.target.value)}
+                placeholder="Enter question content"
+                rows={3}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
+                <select
+                  value={questionType}
+                  onChange={(e) => setQuestionType(e.target.value as QuestionType)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select question type</option>
+                  <option value={QuestionType.SINGLE_CHOICE}>Single Choice</option>
+                  <option value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={questionActive}
+                  onChange={(e) => setQuestionActive(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">Active</span>
+              </label>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <Button 
+                variant="primary" 
+                onClick={() => setShowAnswerList(!showAnswerList)}
+                icon={plusIcon}
+                iconAlt="Show Answers"
+                size="md"
+              >
+                Show Answers
+              </Button>
+              
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={resetQuestionForm}
+                  size="md"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={handleCreateQuestion}
+                  icon={saveIcon}
+                  iconAlt="Save"
+                  size="md"
+                >
+                  Save
+                </Button>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Answer List Table - Show when button clicked */}
+        {showAnswerList && (
+          <>
+            <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Answer List</h2>
+                <Button 
+                  variant="primary" 
+                  onClick={() => {}}
+                  icon={plusIcon}
+                  iconAlt="Add"
+                  size="sm"
+                >
+                  Add
+                </Button>
+              </div>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Content
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Is Correct
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {answers.map((answer, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {answer.content}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={answer.isCorrect ? 'text-green-600' : 'text-red-600'}>
+                          {answer.isCorrect ? 'True' : 'False'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className="text-green-600">Yes</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleEditAnswer(index)}
+                          className="inline-block mr-2"
+                        >
+                          <img 
+                            src={editIcon} 
+                            alt="Edit" 
+                            className="w-5 h-5"
+                            style={{ filter: 'invert(38%) sepia(95%) saturate(1789%) hue-rotate(193deg) brightness(95%) contrast(101%)' }}
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAnswer(index)}
+                          className="inline-block"
+                        >
+                          <img 
+                            src={deleteIcon} 
+                            alt="Delete" 
+                            className="w-5 h-5"
+                            style={{ filter: 'invert(19%) sepia(98%) saturate(7466%) hue-rotate(359deg) brightness(95%) contrast(119%)' }}
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Add Answer Form */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4">Add Answer</h2>
+              <div className="space-y-4">
+                <Textarea
+                  label="Description"
+                  value={answerDescription}
+                  onChange={(e) => setAnswerDescription(e.target.value)}
+                  placeholder="Enter your email"
+                  rows={3}
+                />
+
+                <Input
+                  label=""
+                  value={answerEmail}
+                  onChange={(e) => setAnswerEmail(e.target.value)}
+                  placeholder="Enter your email"
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={answerIsCorrect}
+                        onChange={(e) => setAnswerIsCorrect(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Is Correct</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={answerActive}
+                        onChange={(e) => setAnswerActive(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Status</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="secondary" 
+                    onClick={resetAnswerForm}
+                    size="md"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    onClick={handleSaveAnswer}
+                    icon={saveIcon}
+                    iconAlt="Save"
+                    size="md"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </AdminLayout>

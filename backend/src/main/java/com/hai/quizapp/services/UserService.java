@@ -14,6 +14,8 @@ public interface UserService {
 
     Page<UserResponse> getAllUsers(Pageable pageable);
 
+    Page<UserResponse> searchUsers(String name, Boolean active, Pageable pageable);
+
     UserResponse getUserById(UUID id);
 
     UserResponse updateUser(UUID id, UserRequest request);

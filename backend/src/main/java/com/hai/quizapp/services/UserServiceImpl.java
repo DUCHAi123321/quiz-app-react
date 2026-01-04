@@ -34,8 +34,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse createUser(UserRequest request) {
+        // Validate password is required for create
+        if (request.password() == null || request.password().isBlank()) {
+            throw new IllegalArgumentException("Password is required when creating a new user");
+        }
+
         User user = userMapper.toEntity(request);
+        user.setFullName(request.getFullName());
+        user.setUsername(request.username());
+        user.setPhoneNumber(request.phoneNumber());
+        user.setDateOfBirth(request.dateOfBirth());
         user.setPassword(passwordEncoder.encode(request.password()));
+
+        if (request.active() != null) {
+            user.setActive(request.active());
+        }
 
         if (request.roleIds() != null && !request.roleIds().isEmpty()) {
             Set<Role> roles = new HashSet<>();
@@ -56,6 +69,24 @@ public class UserServiceImpl implements UserService {
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         return userRepository.findByActiveTrue(pageable)
                 .map(userMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserResponse> searchUsers(String name, Boolean active, Pageable pageable) {
+        Page<User> users;
+
+        if (name != null && !name.isEmpty() && active != null) {
+            users = userRepository.findByFullNameContainingIgnoreCaseAndActive(name, active, pageable);
+        } else if (name != null && !name.isEmpty()) {
+            users = userRepository.findByFullNameContainingIgnoreCase(name, pageable);
+        } else if (active != null) {
+            users = userRepository.findByActive(active, pageable);
+        } else {
+            users = userRepository.findAll(pageable);
+        }
+
+        return users.map(userMapper::toResponse);
     }
 
     @Override
@@ -84,7 +115,14 @@ public class UserServiceImpl implements UserService {
         if (request.password() != null && !request.password().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.password()));
         }
-        user.setFullName(request.fullName());
+        user.setFullName(request.getFullName());
+        user.setUsername(request.username());
+        user.setPhoneNumber(request.phoneNumber());
+        user.setDateOfBirth(request.dateOfBirth());
+
+        if (request.active() != null) {
+            user.setActive(request.active());
+        }
 
         if (request.roleIds() != null && !request.roleIds().isEmpty()) {
             Set<Role> roles = new HashSet<>();

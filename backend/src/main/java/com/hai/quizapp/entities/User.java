@@ -58,6 +58,15 @@ public class User {
     @Column(nullable = false, name = "full_name")
     private String fullName;
 
+    @Column(unique = true)
+    private String username;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean active = true;

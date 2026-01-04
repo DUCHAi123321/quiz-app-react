@@ -123,11 +123,18 @@ apiClient.interceptors.response.use(
         processQueue(refreshError as Error, null);
         isRefreshing = false;
         
-        clearAuthAndRedirect();
-        toast.error('Session expired. Please login again.');
+        toast.error('Session expired. Please login again.', { duration: 4000 });
+        setTimeout(() => {
+          clearAuthAndRedirect();
+        }, 500);
         
         throw refreshError;
       }
+    }
+
+    // Handle 403 Forbidden - Not authorized
+    if (error.response?.status === 403) {
+      toast.error('You do not have permission to access this resource.');
     }
 
     // Only show toast for network errors and 500 errors

@@ -15,7 +15,11 @@ export interface RoleResponse {
 export interface UserResponse {
   id: string;
   email: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  username: string | null;
+  phoneNumber: string | null;
+  dateOfBirth: string | null;
   active: boolean;
   roles: RoleResponse[];
   createdAt: string;
@@ -23,8 +27,13 @@ export interface UserResponse {
 }
 
 export interface UserRequest {
+  firstName: string;
+  lastName: string;
   email: string;
-  password: string;
-  fullName: string;
+  username?: string;
+  phoneNumber?: string;
+  password?: string;
+  dateOfBirth?: string;
+  active?: boolean;
   roleIds?: string[];
 }

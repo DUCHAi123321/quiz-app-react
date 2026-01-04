@@ -13,7 +13,7 @@ public interface QuizMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "questions", ignore = true)
-    @Mapping(target = "active", constant = "true")
+    @Mapping(target = "active", expression = "java(request.active() != null ? request.active() : true)")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Quiz toEntity(QuizRequest request);
