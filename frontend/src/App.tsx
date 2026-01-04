@@ -1,20 +1,37 @@
 import { Routes, Route } from 'react-router-dom'
-import NotFoundPage from './pages/error/NotFoundPage'
-import ForbiddenPage from './pages/error/ForbiddenPage'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
-import AboutPage from '@/pages/AboutPage'
-import ContactPage from '@/pages/ContactPage'
+import { lazy, Suspense } from 'react'
 import HomePage from '@/pages/HomePage'
 import QuizzesPage from '@/pages/QuizzesPage'
-import UserManagementPage from '@/pages/management/UserManagementPage'
-import QuizManagementPage from '@/pages/management/QuizManagementPage'
-import QuestionManagementPage from '@/pages/management/QuestionManagementPage'
-import RoleManagementPage from '@/pages/management/RoleManagementPage'
+import AboutPage from '@/pages/AboutPage'
+import ContactPage from '@/pages/ContactPage'
+
+// Lazy load error pages
+const NotFoundPage = lazy(() => import('./pages/error/NotFoundPage'))
+const ForbiddenPage = lazy(() => import('./pages/error/ForbiddenPage'))
+
+// Lazy load auth pages
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+
+// Lazy load management pages (admin)
+const UserManagementPage = lazy(() => import('./pages/management/UserManagementPage'))
+const QuizManagementPage = lazy(() => import('./pages/management/QuizManagementPage'))
+const QuestionManagementPage = lazy(() => import('./pages/management/QuestionManagementPage'))
+const RoleManagementPage = lazy(() => import('./pages/management/RoleManagementPage'))
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+      <p className="mt-4 text-gray-600">Loading...</p>
+    </div>
+  </div>
+)
 
 function App() {
   return (
-    <>
+    <Suspense fallback={<PageLoader />}>
       {/* Nơi định nghĩa các luồng đi của trang web */}
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -35,7 +52,7 @@ function App() {
         {/* Route 404 - Khi user nhập linh tinh */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-    </>
+    </Suspense>
   )
 }
 

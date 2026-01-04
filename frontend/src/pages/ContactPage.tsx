@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import MainLayout from '@/layouts/MainLayout';
 import Input from '@/components/Input';
-import Textarea from '@/components/Textarea';
-import Button from '@/components/Button';
 import emailIcon from '@/assets/icons/email-icon.png';
 import phoneIcon from '@/assets/icons/phone-icon.png';
 import locationIcon from '@/assets/icons/location-icon.png';
@@ -10,30 +10,32 @@ import tiktokIcon from '@/assets/icons/tiktok-icon.png';
 import facebookIcon from '@/assets/icons/facebook-icon.png';
 import youtubeIcon from '@/assets/icons/youtube-icon.png';
 import linkinIcon from '@/assets/icons/linkin-icon.png';
+import { contactSchema, type ContactFormData } from '@/schemas/formSchemas';
 
 const ContactPage = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
   });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
-    alert('Thank you for your feedback! We will get back to you soon.');
-    setFormData({ name: '', email: '', message: '' });
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSubmitting(true);
+    
+    // TODO: Handle form submission with API
+    console.log('Form submitted:', data);
+    
+    // Mock delay
+    setTimeout(() => {
+      setIsSubmitting(false);
+      alert('Thank you for your feedback! We will get back to you soon.');
+      reset();
+    }, 1000);
   };
 
   return (
@@ -54,57 +56,46 @@ const ContactPage = () => {
               Please fill out the form below to send us your feedback. We will get back to you as soon as possible.
             </p>
 
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 font-medium mb-2">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter you name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Input
+                label="Name"
+                type="text"
+                placeholder="Enter you name"
+                error={errors.name?.message}
+                {...register('name')}
+              />
+
+              <Input
+                label="Email"
+                type="email"
+                placeholder="Enter your email"
+                error={errors.email?.message}
+                {...register('email')}
+              />
 
               <div className="mb-4">
-                <label className="block text-gray-700 font-medium mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div className="mb-6">
                 <label className="block text-gray-700 font-medium mb-2">
                   Message
                 </label>
                 <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
                   placeholder="Enter you message"
                   rows={5}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-                  required
+                  className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-vertical ${
+                    errors.message ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  {...register('message')}
                 />
+                {errors.message && (
+                  <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+                )}
               </div>
 
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-md transition-colors duration-300"
+                disabled={isSubmitting}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-md transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Send
+                {isSubmitting ? 'Sending...' : 'Send'}
               </button>
             </form>
           </div>

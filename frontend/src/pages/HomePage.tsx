@@ -17,6 +17,7 @@ const HomePage = () => {
       title: 'Capitals of Country',
       description: 'Test your knowledge of country capitals',
       duration: '15m',
+      difficulty: 'Easy',
       thumbnail: map1,
     },
     {
@@ -24,6 +25,7 @@ const HomePage = () => {
       title: 'Capitals of Country',
       description: 'Test your knowledge of country capitals',
       duration: '15m',
+      difficulty: 'Medium',
       thumbnail: map2,
     },
     {
@@ -31,6 +33,7 @@ const HomePage = () => {
       title: 'Capitals of Country',
       description: 'Test your knowledge of country capitals',
       duration: '15m',
+      difficulty: 'Hard',
       thumbnail: map3,
     },
   ];

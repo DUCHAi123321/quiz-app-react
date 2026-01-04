@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
-import Button from '@/components/Button';
 import map1 from '@/assets/images/map.png';
 import map2 from '@/assets/images/map2.png';
 import map3 from '@/assets/images/map3.png';
@@ -18,6 +17,7 @@ const QuizzesPage = () => {
       title: 'Capitals of Country',
       description: 'Test your knowledge of country capitals',
       duration: '15m',
+      difficulty: 'Easy',
       thumbnail: map1,
     },
     {
@@ -25,6 +25,7 @@ const QuizzesPage = () => {
       title: 'Capitals of Country',
       description: 'Test your knowledge of country capitals',
       duration: '15m',
+      difficulty: 'Medium',
       thumbnail: map2,
     },
     {
@@ -32,6 +33,7 @@ const QuizzesPage = () => {
       title: 'Capitals of Country',
       description: 'Test your knowledge of country capitals',
       duration: '15m',
+      difficulty: 'Hard',
       thumbnail: map3,
     },
   ];
