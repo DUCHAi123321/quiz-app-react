@@ -53,7 +53,7 @@ function App() {
             <Route
               path="/management"
               element={
-                <ProtectedRoute requireRoles={['ADMIN']}>
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
                   <QuizManagementPage />
                 </ProtectedRoute>
               }
@@ -61,7 +61,7 @@ function App() {
             <Route
               path="/management/quiz"
               element={
-                <ProtectedRoute requireRoles={['ADMIN']}>
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
                   <QuizManagementPage />
                 </ProtectedRoute>
               }
@@ -69,7 +69,7 @@ function App() {
             <Route
               path="/management/question"
               element={
-                <ProtectedRoute requireRoles={['ADMIN']}>
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
                   <QuestionManagementPage />
                 </ProtectedRoute>
               }
@@ -77,7 +77,7 @@ function App() {
             <Route
               path="/management/user"
               element={
-                <ProtectedRoute requireRoles={['ADMIN']}>
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
                   <UserManagementPage />
                 </ProtectedRoute>
               }
@@ -85,7 +85,7 @@ function App() {
             <Route
               path="/management/role"
               element={
-                <ProtectedRoute requireRoles={['ADMIN']}>
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
                   <RoleManagementPage />
                 </ProtectedRoute>
               }

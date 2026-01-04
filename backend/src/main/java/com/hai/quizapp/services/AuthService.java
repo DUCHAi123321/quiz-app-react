@@ -123,7 +123,7 @@ public class AuthService {
         User user = User.builder()
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
-                .fullName(request.fullName())
+                .fullName(request.getFullName())
                 .active(true)
                 .roles(roles)
                 .build();
@@ -135,6 +135,17 @@ public class AuthService {
         // Auto login after registration
         LoginRequest loginRequest = new LoginRequest(request.email(), request.password());
         return login(loginRequest);
+    }
+
+    /**
+     * Logout user. In a stateless JWT setup, logout is primarily handled on the
+     * client side. This endpoint serves as a confirmation and can be extended
+     * for token blacklisting if needed.
+     */
+    public void logout() {
+        logger.info("Logout successful");
+        // In a stateless JWT architecture, the actual token invalidation happens on the client side
+        // This endpoint can be extended in the future to implement token blacklisting if required
     }
 
     /**

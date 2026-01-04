@@ -1,17 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import AuthLayout from '@/layouts/AuthLayout';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { ROUTES } from '@/constants';
 import { registerSchema, type RegisterFormData } from '@/schemas/formSchemas';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { register: registerUser, isLoading } = useAuth();
+  const { register: registerUser, isLoading } = useAuthContext();
 
   const {
     register,
@@ -26,10 +26,11 @@ const RegisterPage = () => {
       // Remove confirmPassword before sending to API
       const { confirmPassword, ...registerData } = data;
       await registerUser(registerData);
-      // Navigation will be handled by useAuth hook
+      toast.success('Registration successful! Please login.');
+      navigate('/auth/login');
     } catch (error) {
-      // Error handling is done in useAuth and axios interceptor
       console.error('Registration failed:', error);
+      toast.error('Registration failed. Please try again.');
     }
   };
 

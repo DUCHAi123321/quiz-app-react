@@ -38,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/quizzes")
 @RequiredArgsConstructor
 @Validated
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Quiz Management", description = "APIs for managing quizzes")
 public class QuizController {
@@ -46,6 +45,7 @@ public class QuizController {
     private final QuizService quizService;
 
     @Operation(summary = "Create a new quiz", description = "Creates a new quiz with questions")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<QuizResponse>> createQuiz(@Valid @RequestBody QuizRequest request) {
         QuizResponse response = quizService.createQuiz(request);
@@ -103,6 +103,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Update quiz", description = "Updates an existing quiz")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<QuizResponse>> updateQuiz(
             @PathVariable UUID id,
@@ -112,6 +113,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Add questions to quiz", description = "Adds questions to an existing quiz")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/questions")
     public ResponseEntity<ApiResponse<QuizResponse>> addQuestions(
             @PathVariable UUID id,
@@ -121,6 +123,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Remove questions from quiz", description = "Removes questions from a quiz")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}/questions")
     public ResponseEntity<ApiResponse<QuizResponse>> removeQuestions(
             @PathVariable UUID id,
@@ -130,6 +133,7 @@ public class QuizController {
     }
 
     @Operation(summary = "Delete quiz (Soft Delete)", description = "Soft deletes a quiz")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteQuiz(@PathVariable UUID id) {
         quizService.softDeleteQuiz(id);

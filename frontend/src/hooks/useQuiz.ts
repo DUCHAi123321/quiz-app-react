@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import * as quizService from '@/services/quizService';
 import type { PageResponse, PaginationParams } from '@/types/common';
@@ -9,7 +9,7 @@ export const useQuiz = () => {
   const [quizzes, setQuizzes] = useState<PageResponse<QuizResponse> | null>(null);
   const [currentQuiz, setCurrentQuiz] = useState<QuizResponse | null>(null);
 
-  const fetchQuizzes = async (params?: PaginationParams) => {
+  const fetchQuizzes = useCallback(async (params?: PaginationParams) => {
     try {
       setLoading(true);
       const data = await quizService.getAllQuizzes(params);
@@ -17,14 +17,14 @@ export const useQuiz = () => {
       return data;
     } catch (error) {
       console.error('Failed to fetch quizzes:', error);
-      toast.error('Failed to load quizzes');
+      // Don't show toast for fetch errors - let the component decide
       throw error;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const searchQuizzes = async (params: QuizSearchParams) => {
+  const searchQuizzes = useCallback(async (params: QuizSearchParams) => {
     try {
       setLoading(true);
       const data = await quizService.searchQuizzes(params);
@@ -32,14 +32,14 @@ export const useQuiz = () => {
       return data;
     } catch (error) {
       console.error('Failed to search quizzes:', error);
-      toast.error('Failed to search quizzes');
+      // Don't show toast for search errors - let the component decide
       throw error;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchQuizById = async (id: string) => {
+  const fetchQuizById = useCallback(async (id: string) => {
     try {
       setLoading(true);
       const data = await quizService.getQuizById(id);
@@ -52,9 +52,9 @@ export const useQuiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createQuiz = async (data: QuizRequest) => {
+  const createQuiz = useCallback(async (data: QuizRequest) => {
     try {
       setLoading(true);
       const newQuiz = await quizService.createQuiz(data);
@@ -67,9 +67,9 @@ export const useQuiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const updateQuiz = async (id: string, data: QuizRequest) => {
+  const updateQuiz = useCallback(async (id: string, data: QuizRequest) => {
     try {
       setLoading(true);
       const updatedQuiz = await quizService.updateQuiz(id, data);
@@ -82,9 +82,9 @@ export const useQuiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const deleteQuiz = async (id: string) => {
+  const deleteQuiz = useCallback(async (id: string) => {
     try {
       setLoading(true);
       await quizService.deleteQuiz(id);
@@ -96,9 +96,9 @@ export const useQuiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addQuestionsToQuiz = async (id: string, questionIds: string[]) => {
+  const addQuestionsToQuiz = useCallback(async (id: string, questionIds: string[]) => {
     try {
       setLoading(true);
       const updatedQuiz = await quizService.addQuestionsToQuiz(id, questionIds);
@@ -111,9 +111,9 @@ export const useQuiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const removeQuestionsFromQuiz = async (id: string, questionIds: string[]) => {
+  const removeQuestionsFromQuiz = useCallback(async (id: string, questionIds: string[]) => {
     try {
       setLoading(true);
       const updatedQuiz = await quizService.removeQuestionsFromQuiz(id, questionIds);
@@ -126,7 +126,7 @@ export const useQuiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     loading,

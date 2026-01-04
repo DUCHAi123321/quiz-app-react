@@ -1,17 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import AuthLayout from '@/layouts/AuthLayout';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { ROUTES } from '@/constants';
 import { loginSchema, type LoginFormData } from '@/schemas/formSchemas';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading } = useAuthContext();
 
   const {
     register,
@@ -24,10 +24,21 @@ const LoginPage = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data);
-      // Navigation will be handled by useAuth hook
+      toast.success('Login successful!');
+      
+      // Get updated user from localStorage after login
+      const savedUser = localStorage.getItem('user');
+      const loggedInUser = savedUser ? JSON.parse(savedUser) : null;
+      
+      // Redirect based on user role
+      if (loggedInUser?.roles.includes('ADMIN')) {
+        navigate('/management');
+      } else {
+        navigate('/');
+      }
     } catch (error) {
-      // Error handling is done in useAuth and axios interceptor
       console.error('Login failed:', error);
+      toast.error('Login failed. Please check your credentials.');
     }
   };
 

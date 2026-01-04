@@ -63,29 +63,6 @@ const clearAuthAndRedirect = () => {
   }
 };
 
-// Handle different HTTP error status codes
-const handleErrorStatus = (status: number, message?: string) => {
-  switch (status) {
-    case 400:
-      toast.error(message || 'Bad request. Please check your input.');
-      break;
-    case 401:
-      toast.error('Unauthorized. Please login again.');
-      break;
-    case 403:
-      toast.error('Access denied. You do not have permission.');
-      break;
-    case 404:
-      toast.error('Resource not found.');
-      break;
-    case 500:
-      toast.error('Server error. Please try again later.');
-      break;
-    default:
-      toast.error(message || 'An error occurred. Please try again.');
-  }
-};
-
 // Request interceptor - Add auth token to requests
 apiClient.interceptors.request.use(
   (config) => {
@@ -153,18 +130,16 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Handle other error status codes
-    if (error.response) {
-      const { status } = error.response;
-      const message = (error.response.data as { message?: string })?.message;
-      handleErrorStatus(status, message);
-    } else if (error.request) {
+    // Only show toast for network errors and 500 errors
+    // Let individual services/hooks handle their own error messages
+    if (error.request && !error.response) {
       // Request was made but no response received
       toast.error('Network error. Please check your connection.');
-    } else {
-      // Something else happened
-      toast.error('An unexpected error occurred.');
+    } else if (error.response?.status === 500) {
+      // Only show toast for server errors
+      toast.error('Server error. Please try again later.');
     }
+    // For 400, 403, 404, etc., let the service layer handle the error message
 
     throw error;
   }

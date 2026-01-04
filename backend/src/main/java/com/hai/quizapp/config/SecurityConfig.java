@@ -127,9 +127,9 @@ public class SecurityConfig {
                     .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                     // Admin only endpoints
                     .requestMatchers("/api/v1/users/**").hasRole(Constants.ROLE_ADMIN.replace("ROLE_", ""))
-                    .requestMatchers("/api/v1/quizzes/**").hasRole(Constants.ROLE_ADMIN.replace("ROLE_", ""))
                     .requestMatchers("/api/v1/questions/**").hasRole(Constants.ROLE_ADMIN.replace("ROLE_", ""))
-                    // Authenticated endpoints
+                    // Authenticated endpoints - users can view quizzes, only admins can modify
+                    .requestMatchers("/api/v1/quizzes/**").authenticated()
                     .requestMatchers("/api/v1/exam/**").authenticated()
                     // All other requests require authentication
                     .anyRequest().authenticated());

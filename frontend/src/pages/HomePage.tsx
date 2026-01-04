@@ -16,7 +16,10 @@ const HomePage = () => {
 
   // Fetch quizzes on component mount - only first 3 for homepage
   useEffect(() => {
-    fetchQuizzes({ page: 0, size: 3, sort: 'createdAt', direction: 'DESC' });
+    fetchQuizzes({ page: 0, size: 3, sort: 'createdAt', direction: 'DESC' }).catch(() => {
+      // Silently handle error - user might not be authenticated
+      // This is fine for the homepage as quizzes are optional to display
+    });
   }, []);
 
   // Fallback images for quizzes

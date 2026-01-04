@@ -25,6 +25,8 @@ const QuizzesPage = () => {
       size: 9, 
       sort: 'createdAt', 
       direction: 'DESC' 
+    }).catch(() => {
+      // Silently handle error - let the UI show empty state
     });
   }, [currentPage, fetchQuizzes]);
 

@@ -62,4 +62,14 @@ public class AuthController {
         LoginResponse response = authService.refreshToken(request);
         return ResponseEntity.ok(ApiResponse.success(response, "Token refreshed successfully"));
     }
+
+    @Operation(
+            summary = "User logout",
+            description = "Logout user and invalidate tokens"
+    )
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        authService.logout();
+        return ResponseEntity.ok(ApiResponse.success(null, "Logout successful"));
+    }
 }
