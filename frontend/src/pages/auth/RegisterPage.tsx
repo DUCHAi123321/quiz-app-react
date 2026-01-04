@@ -42,25 +42,57 @@ const RegisterPage = () => {
         </h1>
 
         <form onSubmit={handleSubmit(onSubmit)}>
+          {/* First Name and Last Name - side by side */}
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="First Name"
+              type="text"
+              placeholder="Enter your first name"
+              error={errors.firstName?.message}
+              autoComplete="given-name"
+              {...register('firstName')}
+            />
+
+            <Input
+              label="Last Name"
+              type="text"
+              placeholder="Enter your last name"
+              error={errors.lastName?.message}
+              autoComplete="family-name"
+              {...register('lastName')}
+            />
+          </div>
+
           {/* Email Address - full width */}
           <Input
             label="Email Address"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Enter your password"
             error={errors.email?.message}
             autoComplete="email"
             {...register('email')}
           />
 
-          {/* Full Name - full width */}
-          <Input
-            label="Full Name"
-            type="text"
-            placeholder="Enter your full name"
-            error={errors.fullName?.message}
-            autoComplete="name"
-            {...register('fullName')}
-          />
+          {/* Username and Phone Number - side by side */}
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Username"
+              type="text"
+              placeholder="Enter your username"
+              error={errors.username?.message}
+              autoComplete="username"
+              {...register('username')}
+            />
+
+            <Input
+              label="Phone Number"
+              type="tel"
+              placeholder="Enter your phone number"
+              error={errors.phoneNumber?.message}
+              autoComplete="tel"
+              {...register('phoneNumber')}
+            />
+          </div>
 
           {/* Password - full width */}
           <Input
@@ -99,7 +131,7 @@ const RegisterPage = () => {
               isLoading={isLoading}
               className="flex-1"
             >
-              Register
+              Login
             </Button>
           </div>
         </form>

@@ -18,9 +18,12 @@ export interface LoginResponse {
 }
 
 export interface RegisterRequest {
+  firstName: string;
+  lastName: string;
   email: string;
+  username: string;
+  phoneNumber: string;
   password: string;
-  fullName: string;
 }
 
 export interface ApiResponse<T> {
