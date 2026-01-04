@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
 import Button from '@/components/Button';
+import { useQuiz } from '@/hooks/useQuiz';
 import quizIllustration from '@/assets/images/quiz-bg-01.png';
 import map1 from '@/assets/images/map.png';
 import map2 from '@/assets/images/map2.png';
@@ -9,38 +11,17 @@ import map3 from '@/assets/images/map3.png';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { loading, quizzes: quizzesData, fetchQuizzes } = useQuiz();
 
-  // Sample quiz data
-  const quizzes = [
-    {
-      id: '1',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      difficulty: 'Easy',
-      thumbnail: map1,
-    },
-    {
-      id: '2',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      difficulty: 'Medium',
-      thumbnail: map2,
-    },
-    {
-      id: '3',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      difficulty: 'Hard',
-      thumbnail: map3,
-    },
-  ];
+  // Fetch quizzes on component mount - only first 3 for homepage
+  useEffect(() => {
+    fetchQuizzes({ page: 0, size: 3, sort: 'createdAt', direction: 'DESC' });
+  }, []);
+
+  // Fallback images for quizzes
+  const thumbnails = [map1, map2, map3];
 
   const handleStartQuiz = (quizId: string) => {
-    console.log('Starting quiz:', quizId);
-    // Navigate to quiz page
     navigate(`/quizzes/${quizId}`);
   };
 
@@ -90,15 +71,30 @@ const HomePage = () => {
           </div>
 
           {/* Quiz Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {quizzes.map((quiz) => (
-              <QuizCard
-                key={quiz.id}
-                {...quiz}
-                onStart={() => handleStartQuiz(quiz.id)}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">Loading quizzes...</p>
+            </div>
+          ) : quizzesData && quizzesData.content.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {quizzesData.content.map((quiz, index) => (
+                <QuizCard
+                  key={quiz.id}
+                  id={quiz.id}
+                  title={quiz.title}
+                  description={quiz.description}
+                  duration={`${quiz.durationMinutes}m`}
+                  difficulty={quiz.questions.length > 20 ? 'Hard' : quiz.questions.length > 10 ? 'Medium' : 'Easy'}
+                  thumbnail={thumbnails[index % thumbnails.length]}
+                  onStart={() => handleStartQuiz(quiz.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No quizzes available at the moment.</p>
+            </div>
+          )}
         </div>
       </section>
     </MainLayout>

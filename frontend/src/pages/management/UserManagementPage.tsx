@@ -1,397 +1,239 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 import Button from '@/components/Button';
 import Pagination from '@/components/Pagination';
-import plusIcon from '@/assets/icons/plus-icon.png';
-import reloadIcon from '@/assets/icons/reload-icon.png';
-import searchIcon from '@/assets/icons/search-icon.png';
-import editIcon from '@/assets/icons/edit-icon.png';
-import deleteIcon from '@/assets/icons/delete-icon.png';
-import saveIcon from '@/assets/icons/save-icon.png';
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-  phoneNumber: string;
-  status: boolean;
-}
+import Input from '@/components/Input';
+import { useUser } from '@/hooks/useUser';
+import type { UserRequest } from '@/types/user';
+import toast, { Toaster } from 'react-hot-toast';
 
 const UserManagementPage = () => {
-  const [searchName, setSearchName] = useState('');
-  const [searchStatus, setSearchStatus] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { loading, users, fetchUsers, createUser, updateUser, deleteUser } = useUser();
+  
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Form states
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [itemsPerPage] = useState(10);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Form fields
   const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [status, setStatus] = useState(false);
 
-  // Sample user data
-  const users: User[] = [
-    {
-      id: '1',
-      firstName: 'Admin',
-      lastName: 'User',
-      email: 'admin@domain.com',
-      username: 'admin',
-      phoneNumber: '+84987654321',
-      status: true,
-    },
-    {
-      id: '2',
-      firstName: 'Editor',
-      lastName: 'User',
-      email: 'editor@domain.com',
-      username: 'editor',
-      phoneNumber: '+84987654321',
-      status: true,
-    },
-    {
-      id: '3',
-      firstName: 'Cong',
-      lastName: 'Dinh',
-      email: 'congdinh@domain.com',
-      username: 'congdinh',
-      phoneNumber: '+84987654321',
-      status: true,
-    },
-    {
-      id: '4',
-      firstName: 'Van',
-      lastName: 'Nguyen',
-      email: 'vannguyen@domain.com',
-      username: 'vannguyen',
-      phoneNumber: '+84987654321',
-      status: true,
-    },
-  ];
+  // Fetch users on mount and page change
+  useEffect(() => {
+    loadUsers();
+  }, [currentPage, itemsPerPage]);
 
-  const handleSearch = () => {
-    console.log('Searching:', { searchName, searchStatus });
-  };
-
-  const handleClear = () => {
-    setSearchName('');
-    setSearchStatus(false);
-  };
-
-  const handleSave = () => {
-    console.log('Saving user:', {
-      firstName,
-      lastName,
-      email,
-      username,
-      password,
-      dateOfBirth,
-      phoneNumber,
-      status,
+  const loadUsers = () => {
+    fetchUsers({ 
+      page: currentPage - 1, 
+      size: itemsPerPage, 
+      sort: 'createdAt', 
+      direction: 'DESC' 
     });
   };
 
-  const handleCancel = () => {
-    setFirstName('');
-    setLastName('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const userData: UserRequest = {
+      email,
+      fullName,
+      password,
+    };
+
+    try {
+      if (editingId) {
+        await updateUser(editingId, userData);
+      } else {
+        await createUser(userData);
+      }
+      resetForm();
+      loadUsers();
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleEdit = (id: string) => {
+    const user = users?.content.find(u => u.id === id);
+    if (user) {
+      setEmail(user.email);
+      setFullName(user.fullName);
+      setPassword(''); // Don't populate password for security
+      setEditingId(id);
+      setIsFormOpen(true);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this user?')) {
+      try {
+        await deleteUser(id);
+        loadUsers();
+      } catch (error) {
+        // Error handled in hook
+      }
+    }
+  };
+
+  const resetForm = () => {
     setEmail('');
-    setUsername('');
+    setFullName('');
     setPassword('');
-    setConfirmPassword('');
-    setDateOfBirth('');
-    setPhoneNumber('');
-    setStatus(false);
+    setEditingId(null);
+    setIsFormOpen(false);
   };
-
-  const handleEdit = (userId: string) => {
-    console.log('Edit user:', userId);
-  };
-
-  const handleDelete = (userId: string) => {
-    console.log('Delete user:', userId);
-  };
-
-  const totalPages = Math.ceil(users.length / itemsPerPage);
 
   return (
     <AdminLayout>
+      <Toaster position="top-right" />
       <div className="p-6">
-        {/* User Management Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">User Management</h1>
-
-          {/* Search Form */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name
-              </label>
-              <input
-                type="text"
-                value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-                placeholder="Enter username to search"
-                className="w-full px-4 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <label className="flex items-center gap-2 h-9 px-4  rounded-md w-full">
-                <input
-                  type="checkbox"
-                  checked={searchStatus}
-                  onChange={(e) => setSearchStatus(e.target.checked)}
-                  className="w-6 h-6 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-between gap-3">
-            <Button icon={plusIcon} iconAlt="Create" size="md">
-              Create
-            </Button>
-            <div className="flex gap-3">
-              <Button onClick={handleClear} variant="secondary" icon={reloadIcon} iconAlt="Clear" size="md">
-                Clear
-              </Button>
-              <Button onClick={handleSearch} icon={searchIcon} iconAlt="Search" size="md">
-                Search
-              </Button>
-            </div>
-          </div>
+        <div className="mb-6 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <Button 
+            variant="primary" 
+            onClick={() => setIsFormOpen(!isFormOpen)}
+          >
+            {isFormOpen ? 'Close Form' : '+ Add New User'}
+          </Button>
         </div>
 
-        {/* User List Table */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">User List</h2>
+        {/* Create/Edit Form */}
+        {isFormOpen && (
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">
+              {editingId ? 'Edit User' : 'Create New User'}
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <Input
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  required
+                />
+                
+                <Input
+                  label="Full Name"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Enter full name"
+                  required
+                />
+                
+                <Input
+                  label={editingId ? "New Password (leave blank to keep current)" : "Password"}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required={!editingId}
+                  minLength={8}
+                />
+              </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    First Name
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Last Name
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Email
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    User Name
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Phone Number
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Action
-                  </th>
+              <div className="flex gap-4 mt-6">
+                <Button type="submit" variant="primary" disabled={loading}>
+                  {loading ? 'Saving...' : editingId ? 'Update User' : 'Create User'}
+                </Button>
+                <Button type="button" variant="secondary" onClick={resetForm}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Users Table */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Full Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Roles
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    Loading...
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-700">{user.firstName}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{user.lastName}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{user.email}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{user.username}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{user.phoneNumber}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {user.status ? 'Yes' : 'No'}
+              ) : users && users.content.length > 0 ? (
+                users.content.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {user.email}
                     </td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(user.id)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <img src={editIcon} alt="Edit" className="w-5 h-5" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <img src={deleteIcon} alt="Delete" className="w-5 h-5" style={{ filter: 'invert(27%) sepia(98%) saturate(7426%) hue-rotate(358deg) brightness(95%) contrast(118%)' }} />
-                        </button>
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.fullName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.roles.map(r => r.name.replace('ROLE_', '')).join(', ')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleEdit(user.id)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={users.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No users found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
-        {/* Add User Form */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Add User</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* First Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                First Name
-              </label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Enter your first name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Last Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Last Name
-              </label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter your last name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* User Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                User Name
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your user name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Date of Birth */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date of Birth
-              </label>
-              <input
-                type="date"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                placeholder="Enter your date of birth"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Phone Number */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="Enter your phone number"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+        {/* Pagination */}
+        {users && users.totalPages > 1 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={users.totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
-
-          {/* Status */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={status}
-                onChange={(e) => setStatus(e.target.checked)}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">Active</span>
-            </label>
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex justify-end gap-3 mt-6">
-            <Button onClick={handleCancel} variant="secondary" icon={reloadIcon} iconAlt="Cancel" size="lg">
-              Cancel
-            </Button>
-            <Button onClick={handleSave} icon={saveIcon} iconAlt="Save" size="lg">
-              Save
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </AdminLayout>
   );

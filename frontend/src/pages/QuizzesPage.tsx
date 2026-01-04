@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
+import Pagination from '@/components/Pagination';
+import { useQuiz } from '@/hooks/useQuiz';
 import map1 from '@/assets/images/map.png';
 import map2 from '@/assets/images/map2.png';
 import map3 from '@/assets/images/map3.png';
@@ -9,46 +11,36 @@ import map3 from '@/assets/images/map3.png';
 const QuizzesPage = () => {
   const navigate = useNavigate();
   const [quizCode, setQuizCode] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const { loading, quizzes, fetchQuizzes } = useQuiz();
 
-  // Sample quiz data
-  const quizzes = [
-    {
-      id: '1',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      difficulty: 'Easy',
-      thumbnail: map1,
-    },
-    {
-      id: '2',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      difficulty: 'Medium',
-      thumbnail: map2,
-    },
-    {
-      id: '3',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      difficulty: 'Hard',
-      thumbnail: map3,
-    },
-  ];
+  // Fallback images for quizzes
+  const thumbnails = [map1, map2, map3];
+
+  // Fetch quizzes when page changes
+  useEffect(() => {
+    fetchQuizzes({ 
+      page: currentPage - 1, // API uses 0-based indexing
+      size: 9, 
+      sort: 'createdAt', 
+      direction: 'DESC' 
+    });
+  }, [currentPage]);
 
   const handleStartQuiz = (quizId: string) => {
-    console.log('Starting quiz:', quizId);
     navigate(`/quizzes/${quizId}`);
   };
 
   const handleTakeQuizByCode = (e: React.FormEvent) => {
     e.preventDefault();
     if (quizCode.trim()) {
-      console.log('Taking quiz with code:', quizCode);
       navigate(`/quizzes/${quizCode}`);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -90,14 +82,43 @@ const QuizzesPage = () => {
             </div>
 
             {/* Quiz Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {quizzes.map((quiz) => (
-                <QuizCard
-                  key={quiz.id}
-                  {...quiz}
-                  onStart={() => handleStartQuiz(quiz.id)}
-                />
-              ))}
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">Loading quizzes...</p>
+              </div>
+            ) : quizzes && quizzes.content.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {quizzes.content.map((quiz, index) => (
+                    <QuizCard
+                      key={quiz.id}
+                      id={quiz.id}
+                      title={quiz.title}
+                      description={quiz.description}
+                      duration={`${quiz.durationMinutes}m`}
+                      difficulty={quiz.questions.length > 20 ? 'Hard' : quiz.questions.length > 10 ? 'Medium' : 'Easy'}
+                      thumbnail={thumbnails[index % thumbnails.length]}
+                      onStart={() => handleStartQuiz(quiz.id)}
+                    />
+                  ))}
+                </div>
+                
+                {/* Pagination */}
+                {quizzes.totalPages > 1 && (
+                  <div className="mt-12 flex justify-center">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={quizzes.totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No quizzes available at the moment.</p>
+              </div>
+            )}
             </div>
           </div>
         </section>
