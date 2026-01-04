@@ -21,6 +21,7 @@ function App() {
         <Route path="/quizzes" element={<QuizzesPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/management" element={<QuizManagementPage />} />
         <Route path="/management/quiz" element={<QuizManagementPage />} />
         <Route path="/management/question" element={<QuestionManagementPage />} />
         <Route path="/management/user" element={<UserManagementPage />} />
