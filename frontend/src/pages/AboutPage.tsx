@@ -4,7 +4,7 @@ import logo from '@/assets/icons/logo.png';
 import emailIcon from '@/assets/icons/email-icon.png';
 import phoneIcon from '@/assets/icons/phone-icon.png';
 import locationIcon from '@/assets/icons/location-icon.png';
-import quizIllustration from '@/assets/images/quiz-bg-01..png';
+import quizIllustration from '@/assets/images/quiz-bg-01.png';
 
 const AboutPage = () => {
   return (

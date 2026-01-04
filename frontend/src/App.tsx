@@ -8,6 +8,9 @@ import ContactPage from '@/pages/ContactPage'
 import HomePage from '@/pages/HomePage'
 import QuizzesPage from '@/pages/QuizzesPage'
 import UserManagementPage from '@/pages/management/UserManagementPage'
+import QuizManagementPage from '@/pages/management/QuizManagementPage'
+import QuestionManagementPage from '@/pages/management/QuestionManagementPage'
+import RoleManagementPage from '@/pages/management/RoleManagementPage'
 
 function App() {
   return (
@@ -18,7 +21,10 @@ function App() {
         <Route path="/quizzes" element={<QuizzesPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/management/quiz" element={<QuizManagementPage />} />
+        <Route path="/management/question" element={<QuestionManagementPage />} />
         <Route path="/management/user" element={<UserManagementPage />} />
+        <Route path="/management/role" element={<RoleManagementPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
         

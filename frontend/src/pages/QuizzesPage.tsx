@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
 import Button from '@/components/Button';
-import map1 from '@/assets/images/map..png';
-import map2 from '@/assets/images/map2..png';
-import map3 from '@/assets/images/map3..png';
+import map1 from '@/assets/images/map.png';
+import map2 from '@/assets/images/map2.png';
+import map3 from '@/assets/images/map3.png';
 
 const QuizzesPage = () => {
   const navigate = useNavigate();

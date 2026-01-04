@@ -1,17 +1,13 @@
 import { useState } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 import Button from '@/components/Button';
-import Input from '@/components/Input';
+import Pagination from '@/components/Pagination';
 import plusIcon from '@/assets/icons/plus-icon.png';
 import reloadIcon from '@/assets/icons/reload-icon.png';
 import searchIcon from '@/assets/icons/search-icon.png';
 import editIcon from '@/assets/icons/edit-icon.png';
 import deleteIcon from '@/assets/icons/delete-icon.png';
 import saveIcon from '@/assets/icons/save-icon.png';
-import lessIcon from '@/assets/icons/less-icon.png';
-import less2Icon from '@/assets/icons/less2-icon.png';
-import greaterIcon from '@/assets/icons/greater-icon.png';
-import greater2Icon from '@/assets/icons/greater2-icon.png';
 
 interface User {
   id: string;
@@ -242,48 +238,14 @@ const UserManagementPage = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Items per page:</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button className="w-8 h-8 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center">
-                <img src={less2Icon} alt="First" className="w-4 h-4" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-              </button>
-              <button className="w-8 h-8 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center">
-                <img src={lessIcon} alt="Previous" className="w-4 h-4" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-              </button>
-              <button className="px-3 py-1 border border-blue-500 bg-blue-50 text-blue-600 rounded-md">
-                1
-              </button>
-              <button className="px-3 py-1 border border-blue-500 rounded-md hover:bg-blue-50 text-blue-600">
-                2
-              </button>
-              <button className="px-3 py-1 border border-blue-500 rounded-md hover:bg-blue-50 text-blue-600">
-                3
-              </button>
-              <button className="w-8 h-8 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center">
-                <img src={greaterIcon} alt="Next" className="w-4 h-4" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-              </button>
-              <button className="w-8 h-8 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center">
-                <img src={greater2Icon} alt="Last" className="w-4 h-4" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-              </button>
-            </div>
-
-            <div className="text-sm text-gray-600">
-              1-10 of {users.length}
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={users.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
         </div>
 
         {/* Add User Form */}
