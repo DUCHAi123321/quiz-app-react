@@ -7,13 +7,12 @@ import org.springframework.data.domain.Pageable;
 
 import com.hai.quizapp.dtos.roles.RoleRequest;
 import com.hai.quizapp.dtos.roles.RoleResponse;
-import com.hai.quizapp.enums.RoleEnum;
 
 public interface RoleService {
 
     Page<RoleResponse> getAllRoles(Pageable pageable);
 
-    Page<RoleResponse> searchRoles(RoleEnum name, Boolean active, Pageable pageable);
+    Page<RoleResponse> searchRoles(String name, Boolean active, Pageable pageable);
 
     RoleResponse getRoleById(UUID id);
 

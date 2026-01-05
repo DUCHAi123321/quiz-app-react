@@ -23,7 +23,6 @@ import com.hai.quizapp.dtos.ApiResponse;
 import com.hai.quizapp.dtos.PageResponseDTO;
 import com.hai.quizapp.dtos.roles.RoleRequest;
 import com.hai.quizapp.dtos.roles.RoleResponse;
-import com.hai.quizapp.enums.RoleEnum;
 import com.hai.quizapp.services.RoleService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +32,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/v1/roles")
 @RequiredArgsConstructor
 @Tag(name = "Role Management", description = "APIs for managing roles")
 public class RoleController {
@@ -64,8 +63,8 @@ public class RoleController {
     @GetMapping("/search")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResponseDTO<RoleResponse>>> searchRoles(
-            @Parameter(description = "Role name to search for")
-            @RequestParam(required = false) RoleEnum name,
+            @Parameter(description = "Role name to search for (partial match)")
+            @RequestParam(required = false) String name,
             @Parameter(description = "Active status filter (true/false)")
             @RequestParam(required = false) Boolean active,
             @Parameter(description = "Page number (0-based)")

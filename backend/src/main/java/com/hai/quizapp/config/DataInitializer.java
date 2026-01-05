@@ -14,7 +14,6 @@ import com.hai.quizapp.entities.Quiz;
 import com.hai.quizapp.entities.Role;
 import com.hai.quizapp.entities.User;
 import com.hai.quizapp.enums.QuestionType;
-import com.hai.quizapp.enums.RoleEnum;
 import com.hai.quizapp.repositories.QuestionRepository;
 import com.hai.quizapp.repositories.QuizRepository;
 import com.hai.quizapp.repositories.RoleRepository;
@@ -52,20 +51,22 @@ public class DataInitializer {
      * Initialize default roles
      */
     private void initRoles() {
-        if (!roleRepository.existsByName(RoleEnum.ROLE_ADMIN)) {
+        if (!roleRepository.existsByName("ROLE_ADMIN")) {
             Role adminRole = new Role();
-            adminRole.setName(RoleEnum.ROLE_ADMIN);
+            adminRole.setName("ROLE_ADMIN");
             adminRole.setDescription("Administrator with full access");
+            adminRole.setActive(true);
             roleRepository.save(adminRole);
-            log.info("Created default role: {}", RoleEnum.ROLE_ADMIN);
+            log.info("Created default role: {}", "ROLE_ADMIN");
         }
 
-        if (!roleRepository.existsByName(RoleEnum.ROLE_USER)) {
+        if (!roleRepository.existsByName("ROLE_USER")) {
             Role userRole = new Role();
-            userRole.setName(RoleEnum.ROLE_USER);
+            userRole.setName("ROLE_USER");
             userRole.setDescription("Regular user who can take quizzes");
+            userRole.setActive(true);
             roleRepository.save(userRole);
-            log.info("Created default role: {}", RoleEnum.ROLE_USER);
+            log.info("Created default role: {}", "ROLE_USER");
         }
     }
 
@@ -78,9 +79,9 @@ public class DataInitializer {
             return;
         }
 
-        Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
+        Role adminRole = roleRepository.findByName("ROLE_ADMIN")
                 .orElseThrow(() -> new RuntimeException("Admin role not found"));
-        Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+        Role userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("User role not found"));
 
         // Create admin user

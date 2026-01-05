@@ -30,15 +30,29 @@ const RoleManagementPage = () => {
 
   // Fetch roles on mount and page change
   useEffect(() => {
-    loadRoles();
+    const loadData = async () => {
+      try {
+        await fetchRoles({ 
+          page: currentPage - 1, 
+          size: itemsPerPage, 
+          sort: 'name', 
+          direction: 'ASC' 
+        });
+      } catch (err) {
+        // Error handled in hook
+      }
+    };
+    
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, itemsPerPage]);
 
   const loadRoles = () => {
     fetchRoles({ 
       page: currentPage - 1, 
       size: itemsPerPage, 
-      sort: 'createdAt', 
-      direction: 'DESC' 
+      sort: 'name', 
+      direction: 'ASC' 
     });
   };
 
@@ -47,8 +61,8 @@ const RoleManagementPage = () => {
     const searchParams: any = {
       page: 0,
       size: itemsPerPage,
-      sort: 'createdAt',
-      direction: 'DESC'
+      sort: 'name',
+      direction: 'ASC'
     };
     
     if (searchName && searchName.trim()) {
@@ -57,7 +71,6 @@ const RoleManagementPage = () => {
     
     searchParams.active = searchStatus;
     
-    console.log('Search params:', searchParams);
     searchRoles(searchParams);
   };
 
@@ -160,7 +173,7 @@ const RoleManagementPage = () => {
 
           {/* Action Buttons */}
           <div className="flex justify-between gap-3">
-            <Button icon={plusIcon} iconAlt="Create" size="md">
+            <Button onClick={handleCancel} icon={plusIcon} iconAlt="Create" size="md">
               Create
             </Button>
             <div className="flex gap-3">
@@ -241,14 +254,16 @@ const RoleManagementPage = () => {
           </div>
 
           {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={roles?.totalPages || 0}
-            totalItems={roles?.totalElements || 0}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+          {roles && roles.totalElements > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={roles?.totalPages || 0}
+              totalItems={roles?.totalElements || 0}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          )}
         </div>
 
         {/* Add Role Form */}
@@ -267,7 +282,7 @@ const RoleManagementPage = () => {
                 type="text"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
-                placeholder="Enter role name (e.g., ROLE_ADMIN)"
+                placeholder="Enter role name (e.g., ROLE_MANAGER)"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />

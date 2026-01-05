@@ -2,12 +2,8 @@ package com.hai.quizapp.entities;
 
 import java.util.UUID;
 
-import com.hai.quizapp.enums.RoleEnum;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,10 +29,13 @@ public class Role {
     private UUID id;
 
     @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
-    private RoleEnum name;
+    @Column(nullable = false, unique = true, length = 50)
+    private String name;
 
     @Column(length = 255)
     private String description;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean active = true;
 }

@@ -51,7 +51,7 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional(readOnly = true)
     public Page<QuizResponse> getAllQuizzes(Pageable pageable) {
-        return quizRepository.findByActiveTrue(pageable)
+        return quizRepository.findAll(pageable)
                 .map(quizMapper::toResponse);
     }
 

@@ -8,12 +8,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.hai.quizapp.entities.Role;
-import com.hai.quizapp.enums.RoleEnum;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, UUID>, JpaSpecificationExecutor<Role> {
 
-    Optional<Role> findByName(RoleEnum name);
+    Optional<Role> findByName(String name);
 
-    boolean existsByName(RoleEnum name);
+    boolean existsByName(String name);
 }

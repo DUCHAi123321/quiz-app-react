@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.hai.quizapp.dtos.roles.RoleRequest;
 import com.hai.quizapp.dtos.roles.RoleResponse;
 import com.hai.quizapp.entities.Role;
-import com.hai.quizapp.enums.RoleEnum;
 import com.hai.quizapp.exceptions.ResourceNotFoundException;
 import com.hai.quizapp.mappers.RoleMapper;
 import com.hai.quizapp.repositories.RoleRepository;
@@ -32,12 +31,12 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Page<RoleResponse> searchRoles(RoleEnum name, Boolean active, Pageable pageable) {
+    public Page<RoleResponse> searchRoles(String name, Boolean active, Pageable pageable) {
         Specification<Role> spec = (root, query, cb) -> {
             Predicate predicate = cb.conjunction();
 
-            if (name != null) {
-                predicate = cb.and(predicate, cb.equal(root.get("name"), name));
+            if (name != null && !name.trim().isEmpty()) {
+                predicate = cb.and(predicate, cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
             }
 
             if (active != null) {

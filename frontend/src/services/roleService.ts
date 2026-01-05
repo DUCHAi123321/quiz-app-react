@@ -5,7 +5,9 @@ import type { RoleRequest, RoleResponse, RoleSearchParams } from '@/types/role';
 
 // Get all roles with pagination
 export const getAllRoles = async (params?: PaginationParams): Promise<PageResponse<RoleResponse>> => {
+  console.log('[roleService] Calling GET /roles with params:', params);
   const response = await apiClient.get<ApiResponse<PageResponse<RoleResponse>>>('/roles', { params });
+  console.log('[roleService] Response:', response.data);
   return response.data.data;
 };
 

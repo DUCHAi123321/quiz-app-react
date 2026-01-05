@@ -66,7 +66,7 @@ public class AuthService {
                     .orElseThrow(() -> new UnauthorizedException("User not found"));
 
             Set<String> roles = user.getRoles().stream()
-                    .map(role -> role.getName().name())
+                    .map(Role::getName)
                     .collect(Collectors.toSet());
 
             String accessToken = tokenService.generateToken(user, roles);
@@ -108,10 +108,10 @@ public class AuthService {
         }
 
         // Get or create default USER role
-        Role userRole = roleRepository.findByName(RoleEnum.ROLE_USER)
+        Role userRole = roleRepository.findByName("ROLE_USER")
                 .orElseGet(() -> {
                     Role newRole = Role.builder()
-                            .name(RoleEnum.ROLE_USER)
+                            .name("ROLE_USER")
                             .description("Default user role")
                             .build();
                     return roleRepository.save(newRole);
@@ -172,7 +172,7 @@ public class AuthService {
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
 
         Set<String> roles = user.getRoles().stream()
-                .map(role -> role.getName().name())
+                .map(Role::getName)
                 .collect(Collectors.toSet());
 
         String newAccessToken = tokenService.generateToken(user, roles);

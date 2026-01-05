@@ -12,11 +12,14 @@ export const useRole = () => {
   const fetchRoles = useCallback(async (params?: PaginationParams) => {
     try {
       setLoading(true);
+      console.log('[useRole] Fetching roles with params:', params);
       const data = await roleService.getAllRoles(params);
+      console.log('[useRole] Fetched roles data:', data);
       setRoles(data);
       return data;
     } catch (error) {
-      console.error('Failed to fetch roles:', error);
+      console.error('[useRole] Failed to fetch roles:', error);
+      toast.error('Failed to load roles. Please check console for details.');
       throw error;
     } finally {
       setLoading(false);
@@ -26,11 +29,14 @@ export const useRole = () => {
   const searchRoles = useCallback(async (params: RoleSearchParams) => {
     try {
       setLoading(true);
+      console.log('[useRole] Searching roles with params:', params);
       const data = await roleService.searchRoles(params);
+      console.log('[useRole] Search results:', data);
       setRoles(data);
       return data;
     } catch (error) {
-      console.error('Failed to search roles:', error);
+      console.error('[useRole] Failed to search roles:', error);
+      toast.error('Failed to search roles. Please check console for details.');
       throw error;
     } finally {
       setLoading(false);
