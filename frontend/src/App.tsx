@@ -1,18 +1,101 @@
 import { Routes, Route } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import ErrorBoundary from '@/components/ErrorBoundary'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { AuthProvider } from '@/contexts/AuthContext'
+import HomePage from '@/pages/HomePage'
+import QuizzesPage from '@/pages/QuizzesPage'
+import AboutPage from '@/pages/AboutPage'
+import ContactPage from '@/pages/ContactPage'
+
+// Lazy load error pages
+const NotFoundPage = lazy(() => import('./pages/error/NotFoundPage'))
+const ForbiddenPage = lazy(() => import('./pages/error/ForbiddenPage'))
+
+// Lazy load auth pages
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
+
+const UserManagementPage = lazy(() => import('./pages/management/UserManagementPage'))
+const QuizManagementPage = lazy(() => import('./pages/management/QuizManagementPage'))
+const QuestionManagementPage = lazy(() => import('./pages/management/QuestionManagementPage'))
+const RoleManagementPage = lazy(() => import('./pages/management/RoleManagementPage'))
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+      <p className="mt-4 text-gray-600">Loading...</p>
+    </div>
+  </div>
+)
 
 function App() {
   return (
-    <>
-      {/* Nơi định nghĩa các luồng đi của trang web */}
-      <Routes>
-        <Route path="/" element={<div className="p-4">Trang chủ (Home Page)</div>} />
-        <Route path="/quizzes" element={<div className="p-4">Danh sách bài thi (Quiz List)</div>} />
-        <Route path="/auth/login" element={<div className="p-4">Trang đăng nhập (Login)</div>} />
+    <AuthProvider>
+      <ErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/quizzes" element={<QuizzesPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            
+            {/* Auth Routes */}
+            <Route path="/auth/login" element={<LoginPage />} />
+            <Route path="/auth/register" element={<RegisterPage />} />
+            
+            <Route
+              path="/management"
+              element={
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
+                  <QuizManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/quiz"
+              element={
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
+                  <QuizManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/question"
+              element={
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
+                  <QuestionManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/user"
+              element={
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
+                  <UserManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/management/role"
+              element={
+                <ProtectedRoute requireRoles={['ROLE_ADMIN']}>
+                  <RoleManagementPage />
+                </ProtectedRoute>
+              }
+            />
         
-        {/* Route 404 - Khi user nhập linh tinh */}
-        <Route path="*" element={<div className="p-4 text-red-500">404 - Không tìm thấy trang</div>} />
-      </Routes>
-    </>
+            
+            {/* Error Routes */}
+            <Route path="/forbidden" element={<ForbiddenPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    </AuthProvider>
   )
 }
 
