@@ -1,72 +1,66 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import toast, { Toaster } from 'react-hot-toast';
+import AuthLayout from '@/layouts/AuthLayout';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { ROUTES } from '@/constants';
+import { registerSchema, type RegisterFormData } from '@/schemas/formSchemas';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    username: '',
-    phoneNumber: '',
-    password: '',
-    confirmPassword: '',
+  const { register: registerUser, isLoading } = useAuthContext();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    // TODO: Implement register logic with API
-    console.log('Register:', formData);
-
-    // Mock delay
-    setTimeout(() => {
-      setIsLoading(false);
-      // navigate(ROUTES.LOGIN);
-    }, 1000);
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...registerData } = data;
+      await registerUser(registerData);
+      toast.success('Registration successful! Please login.');
+      navigate('/auth/login');
+    } catch (error) {
+      console.error('Registration failed:', error);
+      toast.error('Registration failed. Please try again.');
+    }
   };
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: "url('/background.png')" }}
-    >
-      {/* Register Card */}
-      <div className="relative z-10 bg-white rounded-lg shadow-2xl p-8 max-w-lg w-full">
+    <>
+      <Toaster position="top-right" />
+      <AuthLayout>
         <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Register
         </h1>
 
-        <form onSubmit={handleSubmit}>
-          {/* First Name & Last Name - 2 columns */}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* First Name and Last Name - side by side */}
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="First Name"
               type="text"
               placeholder="Enter your first name"
-              value={formData.firstName}
-              onChange={handleChange('firstName')}
-              required
+              error={errors.firstName?.message}
               autoComplete="given-name"
+              {...register('firstName')}
             />
 
             <Input
               label="Last Name"
               type="text"
               placeholder="Enter your last name"
-              value={formData.lastName}
-              onChange={handleChange('lastName')}
-              required
+              error={errors.lastName?.message}
               autoComplete="family-name"
+              {...register('lastName')}
             />
           </div>
 
@@ -74,33 +68,30 @@ const RegisterPage = () => {
           <Input
             label="Email Address"
             type="email"
-            placeholder="Enter your email"
-            value={formData.email}
-            onChange={handleChange('email')}
-            required
+            placeholder="Enter your password"
+            error={errors.email?.message}
             autoComplete="email"
+            {...register('email')}
           />
 
-          {/* Username & Phone Number - 2 columns */}
+          {/* Username and Phone Number - side by side */}
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="Username"
               type="text"
               placeholder="Enter your username"
-              value={formData.username}
-              onChange={handleChange('username')}
-              required
+              error={errors.username?.message}
               autoComplete="username"
+              {...register('username')}
             />
 
             <Input
               label="Phone Number"
               type="tel"
               placeholder="Enter your phone number"
-              value={formData.phoneNumber}
-              onChange={handleChange('phoneNumber')}
-              required
+              error={errors.phoneNumber?.message}
               autoComplete="tel"
+              {...register('phoneNumber')}
             />
           </div>
 
@@ -109,10 +100,9 @@ const RegisterPage = () => {
             label="Password"
             type="password"
             placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange('password')}
-            required
+            error={errors.password?.message}
             autoComplete="new-password"
+            {...register('password')}
           />
 
           {/* Confirm Password - full width */}
@@ -120,10 +110,9 @@ const RegisterPage = () => {
             label="Confirm Password"
             type="password"
             placeholder="Confirm your password"
-            value={formData.confirmPassword}
-            onChange={handleChange('confirmPassword')}
-            required
+            error={errors.confirmPassword?.message}
             autoComplete="new-password"
+            {...register('confirmPassword')}
           />
 
           <div className="flex gap-3 mb-4">
@@ -132,6 +121,7 @@ const RegisterPage = () => {
               variant="secondary"
               onClick={() => navigate(ROUTES.HOME)}
               className="flex-1"
+              disabled={isLoading}
             >
               Back to Home
             </Button>
@@ -142,7 +132,7 @@ const RegisterPage = () => {
               isLoading={isLoading}
               className="flex-1"
             >
-              Register
+              Login
             </Button>
           </div>
         </form>
@@ -158,8 +148,8 @@ const RegisterPage = () => {
             </Link>
           </p>
         </div>
-      </div>
-    </main>
+      </AuthLayout>
+    </>
   );
 };
 

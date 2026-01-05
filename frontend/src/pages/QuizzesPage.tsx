@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
-import Button from '@/components/Button';
+import Pagination from '@/components/Pagination';
+import { useQuiz } from '@/hooks/useQuiz';
+import { SkeletonList } from '@/components/Skeleton';
 import map1 from '@/assets/images/map.png';
 import map2 from '@/assets/images/map2.png';
 import map3 from '@/assets/images/map3.png';
@@ -10,43 +12,45 @@ import map3 from '@/assets/images/map3.png';
 const QuizzesPage = () => {
   const navigate = useNavigate();
   const [quizCode, setQuizCode] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const { loading, quizzes, fetchQuizzes } = useQuiz();
 
-  // Sample quiz data
-  const quizzes = [
-    {
-      id: '1',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      thumbnail: map1,
-    },
-    {
-      id: '2',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      thumbnail: map2,
-    },
-    {
-      id: '3',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      thumbnail: map3,
-    },
-  ];
+  // Fallback images for quizzes
+  const thumbnails = [map1, map2, map3];
+
+  // Fetch quizzes when page changes
+  useEffect(() => {
+    fetchQuizzes({ 
+      page: currentPage - 1, // API uses 0-based indexing
+      size: 9, 
+      sort: 'createdAt', 
+      direction: 'DESC' 
+    }).catch(() => {
+      // Silently handle error - let the UI show empty state
+    });
+  }, [currentPage, fetchQuizzes]);
 
   const handleStartQuiz = (quizId: string) => {
-    console.log('Starting quiz:', quizId);
     navigate(`/quizzes/${quizId}`);
   };
 
   const handleTakeQuizByCode = (e: React.FormEvent) => {
     e.preventDefault();
     if (quizCode.trim()) {
-      console.log('Taking quiz with code:', quizCode);
       navigate(`/quizzes/${quizCode}`);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    globalThis.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper function to determine quiz difficulty
+  const getDifficulty = (questionCount: number): string => {
+    if (questionCount > 20) return 'Hard';
+    if (questionCount > 10) return 'Medium';
+    return 'Easy';
   };
 
   return (
@@ -88,15 +92,46 @@ const QuizzesPage = () => {
             </div>
 
             {/* Quiz Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {quizzes.map((quiz) => (
-                <QuizCard
-                  key={quiz.id}
-                  {...quiz}
-                  onStart={() => handleStartQuiz(quiz.id)}
-                />
-              ))}
-            </div>
+            {loading && <SkeletonList count={9} />}
+            
+            {!loading && quizzes && quizzes.content.length > 0 && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {quizzes.content.map((quiz, index) => (
+                    <QuizCard
+                      key={quiz.id}
+                      id={quiz.id}
+                      title={quiz.title}
+                      description={quiz.description}
+                      duration={`${quiz.durationMinutes}m`}
+                      difficulty={getDifficulty(quiz.questions.length)}
+                      thumbnail={thumbnails[index % thumbnails.length]}
+                      onStart={() => handleStartQuiz(quiz.id)}
+                    />
+                  ))}
+                </div>
+                
+                {/* Pagination */}
+                {quizzes.totalPages > 1 && (
+                  <div className="mt-12 flex justify-center">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={quizzes.totalPages}
+                      totalItems={quizzes.totalElements}
+                      itemsPerPage={9}
+                      onPageChange={handlePageChange}
+                      onItemsPerPageChange={() => {}}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+            
+            {!loading && (!quizzes || quizzes.content.length === 0) && (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No quizzes available at the moment.</p>
+              </div>
+            )}
           </div>
         </section>
       </div>

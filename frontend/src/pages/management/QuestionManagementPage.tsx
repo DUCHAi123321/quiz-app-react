@@ -1,192 +1,257 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 import Button from '@/components/Button';
 import Pagination from '@/components/Pagination';
+import Input from '@/components/Input';
+import Textarea from '@/components/Textarea';
+import { useQuestion } from '@/hooks/useQuestion';
+import { QuestionType } from '@/types/question';
+import type { QuestionRequest, AnswerRequest } from '@/types/question';
+import toast, { Toaster } from 'react-hot-toast';
+import editIcon from '@/assets/icons/edit-icon.png';
+import deleteIcon from '@/assets/icons/delete-icon.png';
 import plusIcon from '@/assets/icons/plus-icon.png';
 import reloadIcon from '@/assets/icons/reload-icon.png';
 import searchIcon from '@/assets/icons/search-icon.png';
-import editIcon from '@/assets/icons/edit-icon.png';
-import deleteIcon from '@/assets/icons/delete-icon.png';
 import saveIcon from '@/assets/icons/save-icon.png';
 
-interface Question {
-  id: string;
-  content: string;
-  type: string;
-  answers: number;
-  status: string;
-}
-
-interface Answer {
-  id: string;
-  content: string;
-  isCorrect: string;
-  status: string;
-}
-
 const QuestionManagementPage = () => {
+  const { loading, questions, fetchQuestions, createQuestion, updateQuestion, deleteQuestion } = useQuestion();
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  
+  // Search fields
   const [searchName, setSearchName] = useState('');
   const [searchType, setSearchType] = useState('');
-  const [searchStatus, setSearchStatus] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Form states
+  const [searchActive, setSearchActive] = useState(true);
+  
+  // Question form fields
   const [questionContent, setQuestionContent] = useState('');
-  const [questionType, setQuestionType] = useState('');
-  const [questionStatus, setQuestionStatus] = useState(false);
-
-  // Answer form states
+  const [questionType, setQuestionType] = useState<QuestionType>(QuestionType.SINGLE_CHOICE);
+  const [questionActive, setQuestionActive] = useState(true);
+  const [showAnswerList, setShowAnswerList] = useState(false);
+  
+  // Answer form fields
   const [answerDescription, setAnswerDescription] = useState('');
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [answerStatus, setAnswerStatus] = useState(false);
+  const [answerEmail, setAnswerEmail] = useState('');
+  const [answerIsCorrect, setAnswerIsCorrect] = useState(true);
+  const [answerActive, setAnswerActive] = useState(true);
+  
+  // Mock answers data (will be replaced with real data)
+  const [answers, setAnswers] = useState<AnswerRequest[]>([
+    { content: 'Wright Brothers', isCorrect: true },
+    { content: 'Alexander Graham Bell', isCorrect: false },
+    { content: 'Albert Einstein', isCorrect: false },
+    { content: 'Charles Babbage', isCorrect: false },
+  ]);
 
-  // Sample question data
-  const questions: Question[] = [
-    { id: '1', content: 'Who is the founder of the airplane?', type: 'Multiple Choice', answers: 4, status: 'Yes' },
-    { id: '2', content: 'Who is the founder of the first virus After?', type: 'Multiple Choice', answers: 4, status: 'Yes' },
-    { id: '3', content: 'Where is Viet Nam?', type: 'Multiple Choice', answers: 4, status: 'Yes' },
-    { id: '4', content: 'What is the capital of France?', type: 'Single Choice', answers: 4, status: 'null' },
-    { id: '5', content: 'Who is the founder of the alternating current?', type: 'Multiple Choice', answers: 4, status: 'null' },
-    { id: '6', content: 'Where is Australia?', type: 'Multiple Choice', answers: 4, status: 'null' },
-    { id: '7', content: 'Who is the founder of the X-Ray?', type: 'Multiple Choice', answers: 4, status: 'null' },
-    { id: '8', content: 'Where is Taiwan?', type: 'Multiple Choice', answers: 4, status: 'null' },
-    { id: '9', content: 'Where is the United States?', type: 'Multiple Choice', answers: 4, status: 'null' },
-    { id: '10', content: 'Who is the founder of the scanning electron?', type: 'Multiple Choice', answers: 4, status: 'null' },
-  ];
+  // Fetch questions on mount and page change
+  useEffect(() => {
+    loadQuestions();
+  }, [currentPage, itemsPerPage]);
 
-  // Sample answer data
-  const answers: Answer[] = [
-    { id: '1', content: 'Wright brothers', isCorrect: 'True', status: 'Yes' },
-    { id: '2', content: 'Alexander Graham Bell', isCorrect: 'False', status: 'Yes' },
-    { id: '3', content: 'Albert Einstein', isCorrect: 'False', status: 'Yes' },
-    { id: '4', content: 'Charles Babbage', isCorrect: 'False', status: 'null' },
-  ];
-
-  const handleSearch = () => {
-    console.log('Searching:', { searchName, searchType, searchStatus });
-  };
-
-  const handleClear = () => {
-    setSearchName('');
-    setSearchType('');
-    setSearchStatus(false);
-  };
-
-  const handleShowAnswers = () => {
-    console.log('Showing answers');
-  };
-
-  const handleSave = () => {
-    console.log('Saving question:', {
-      questionContent,
-      questionType,
-      questionStatus,
+  const loadQuestions = () => {
+    fetchQuestions({ 
+      page: currentPage - 1, 
+      size: itemsPerPage, 
+      sort: 'createdAt', 
+      direction: 'DESC' 
     });
   };
 
-  const handleCancel = () => {
-    setQuestionContent('');
-    setQuestionType('');
-    setQuestionStatus(false);
+  const handleSearch = () => {
+    setCurrentPage(1);
+    const searchParams: any = {
+      page: 0,
+      size: itemsPerPage,
+      sort: 'createdAt',
+      direction: 'DESC'
+    };
+    
+    if (searchName && searchName.trim()) {
+      searchParams.content = searchName.trim();
+    }
+    
+    if (searchType) {
+      searchParams.type = searchType;
+    }
+    
+    searchParams.isActive = searchActive;
+    
+    fetchQuestions(searchParams);
+  };
+
+  const handleClearSearch = () => {
+    setSearchName('');
+    setSearchType('');
+    setSearchActive(true);
+    loadQuestions();
+  };
+
+  const handleEditQuestion = (id: string) => {
+    const question = questions?.content.find(q => q.id === id);
+    if (question) {
+      setQuestionContent(question.content);
+      setQuestionType(question.type);
+      setQuestionActive(question.isActive);
+      setEditingQuestionId(id);
+      // Load answers if available
+      if (question.answers && question.answers.length > 0) {
+        setAnswers(question.answers.map(a => ({ content: a.content, isCorrect: a.isCorrect })));
+        setShowAnswerList(true);
+      }
+    }
+  };
+
+  const handleCreateQuestion = async () => {
+    if (!questionContent.trim()) {
+      toast.error('Question content is required');
+      return;
+    }
+
+    const questionData: QuestionRequest = {
+      content: questionContent,
+      type: questionType,
+      score: 1,
+      answers: answers,
+    };
+
+    try {
+      if (editingQuestionId) {
+        await updateQuestion(editingQuestionId, questionData);
+      } else {
+        await createQuestion(questionData);
+      }
+      resetQuestionForm();
+      loadQuestions();
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleDeleteQuestion = async (id: string) => {
+    if (confirm('Are you sure you want to delete this question?')) {
+      try {
+        await deleteQuestion(id);
+        loadQuestions();
+      } catch (error) {
+        // Error handled in hook
+      }
+    }
   };
 
   const handleSaveAnswer = () => {
-    console.log('Saving answer:', {
-      answerDescription,
-      isCorrect,
-      answerStatus,
-    });
+    if (!answerDescription.trim()) {
+      toast.error('Answer content is required');
+      return;
+    }
+    
+    const newAnswer: AnswerRequest = {
+      content: answerDescription,
+      isCorrect: answerIsCorrect,
+    };
+    setAnswers([...answers, newAnswer]);
+    resetAnswerForm();
+    toast.success('Answer added successfully');
   };
 
-  const handleCancelAnswer = () => {
+  const handleEditAnswer = (index: number) => {
+    const answer = answers[index];
+    setAnswerDescription(answer.content);
+    setAnswerIsCorrect(answer.isCorrect || false);
+  };
+
+  const handleDeleteAnswer = (index: number) => {
+    setAnswers(answers.filter((_, i) => i !== index));
+  };
+
+  const resetQuestionForm = () => {
+    setQuestionContent('');
+    setQuestionType(QuestionType.SINGLE_CHOICE);
+    setQuestionActive(true);
+    setEditingQuestionId(null);
+    setShowAnswerList(false);
+  };
+
+  const resetAnswerForm = () => {
     setAnswerDescription('');
-    setIsCorrect(false);
-    setAnswerStatus(false);
+    setAnswerEmail('');
+    setAnswerIsCorrect(true);
+    setAnswerActive(true);
   };
-
-  const handleEdit = (questionId: string) => {
-    console.log('Edit question:', questionId);
-  };
-
-  const handleDelete = (questionId: string) => {
-    console.log('Delete question:', questionId);
-  };
-
-  const handleEditAnswer = (answerId: string) => {
-    console.log('Edit answer:', answerId);
-  };
-
-  const handleDeleteAnswer = (answerId: string) => {
-    console.log('Delete answer:', answerId);
-  };
-
-  const totalPages = Math.ceil(questions.length / itemsPerPage);
 
   return (
     <AdminLayout>
+      <Toaster position="top-right" />
       <div className="p-6">
-        {/* Question Management Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Question Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Question Management</h1>
 
-          {/* Search Form */}
+        {/* Search Form */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name
-              </label>
+              <label className="block text-gray-700 font-medium mb-2">Name</label>
               <input
-                type="text"
                 value={searchName}
                 onChange={(e) => setSearchName(e.target.value)}
                 placeholder="Enter role name to search"
-                className="w-full px-4 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               />
             </div>
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Type
-              </label>
+              <label className="block text-gray-700 font-medium mb-2">Type</label>
               <select
                 value={searchType}
                 onChange={(e) => setSearchType(e.target.value)}
-                className="w-full px-4 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               >
-                <option value="">Select item</option>
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="single-choice">Single Choice</option>
-                <option value="true-false">True/False</option>
+                <option value="">Select type</option>
+                <option value={QuestionType.SINGLE_CHOICE}>Single Choice</option>
+                <option value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</option>
               </select>
             </div>
           </div>
 
-          {/* Status */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={searchStatus}
-                onChange={(e) => setSearchStatus(e.target.checked)}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                checked={searchActive}
+                onChange={(e) => setSearchActive(e.target.checked)}
+                className="w-4 h-4 text-blue-600 rounded"
               />
-              <span className="text-sm text-gray-700">Active</span>
+              <span className="text-sm font-medium text-gray-700">Status</span>
             </label>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-between gap-3">
-            <Button icon={plusIcon} iconAlt="Create" size="md">
+          <div className="flex justify-between">
+            <Button 
+              variant="primary" 
+              onClick={handleSearch}
+              icon={plusIcon}
+              iconAlt="Create"
+            >
               Create
             </Button>
-            <div className="flex gap-3">
-              <Button onClick={handleClear} variant="secondary" icon={reloadIcon} iconAlt="Clear" size="md">
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="secondary" 
+                onClick={handleClearSearch}
+                icon={reloadIcon}
+                iconAlt="Clear"
+              >
                 Clear
               </Button>
-              <Button onClick={handleSearch} icon={searchIcon} iconAlt="Search" size="md">
+              <Button 
+                variant="primary" 
+                onClick={handleSearch}
+                icon={searchIcon}
+                iconAlt="Search"
+              >
                 Search
               </Button>
             </div>
@@ -194,251 +259,317 @@ const QuestionManagementPage = () => {
         </div>
 
         {/* Question List Table */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Question List</h2>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Content
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Type
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Answers
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Action
-                  </th>
+        <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+          <h2 className="text-lg font-semibold p-4 border-b">Question List</h2>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Content
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Answers
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    Loading...
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {questions.map((question) => (
-                  <tr key={question.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-700">{question.content}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{question.type}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{question.answers}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{question.status}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(question.id)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <img src={editIcon} alt="Edit" className="w-5 h-5" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(question.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <img src={deleteIcon} alt="Delete" className="w-5 h-5" style={{ filter: 'invert(27%) sepia(98%) saturate(7426%) hue-rotate(358deg) brightness(95%) contrast(118%)' }} />
-                        </button>
-                      </div>
+              ) : questions && questions.content.length > 0 ? (
+                questions.content.map((question) => (
+                  <tr key={question.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-md">
+                      {question.content}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {question.type.replace('_', ' ')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {question.answers.length}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={question.isActive ? 'text-green-600' : 'text-red-600'}>
+                        {question.isActive ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleEditQuestion(question.id)}
+                        className="inline-block mr-2"
+                      >
+                        <img 
+                          src={editIcon} 
+                          alt="Edit" 
+                          className="w-5 h-5"
+                          style={{ filter: 'invert(38%) sepia(95%) saturate(1789%) hue-rotate(193deg) brightness(95%) contrast(101%)' }}
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteQuestion(question.id)}
+                        className="inline-block"
+                      >
+                        <img 
+                          src={deleteIcon} 
+                          alt="Delete" 
+                          className="w-5 h-5"
+                          style={{ filter: 'invert(19%) sepia(98%) saturate(7466%) hue-rotate(359deg) brightness(95%) contrast(119%)' }}
+                        />
+                      </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No questions found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
 
           {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={questions.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+          {questions && questions.totalElements > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={questions?.totalPages || 0}
+              totalItems={questions?.totalElements || 0}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          )}
         </div>
 
         {/* Add Question Form */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Add Question</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Content */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content
-              </label>
-              <input
-                type="text"
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Add Question</h2>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Textarea
+                label="Content"
                 value={questionContent}
                 onChange={(e) => setQuestionContent(e.target.value)}
                 placeholder="Enter question content"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
               />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
+                <select
+                  value={questionType}
+                  onChange={(e) => setQuestionType(e.target.value as QuestionType)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select question type</option>
+                  <option value={QuestionType.SINGLE_CHOICE}>Single Choice</option>
+                  <option value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</option>
+                </select>
+              </div>
             </div>
 
-            {/* Question Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Question Type
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={questionActive}
+                  onChange={(e) => setQuestionActive(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">Active</span>
               </label>
-              <select
-                value={questionType}
-                onChange={(e) => setQuestionType(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            </div>
+
+            <div className="flex justify-between items-center">
+              <Button 
+                variant="primary" 
+                onClick={() => setShowAnswerList(!showAnswerList)}
+                icon={plusIcon}
+                iconAlt="Show Answers"
+                size="md"
               >
-                <option value="">Select question type</option>
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="single-choice">Single Choice</option>
-                <option value="true-false">True/False</option>
-              </select>
+                Show Answers
+              </Button>
+              
+              <div className="flex gap-2">
+                <Button 
+                  variant="secondary" 
+                  onClick={resetQuestionForm}
+                  size="md"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={handleCreateQuestion}
+                  icon={saveIcon}
+                  iconAlt="Save"
+                  size="md"
+                >
+                  Save
+                </Button>
+              </div>
             </div>
-          </div>
-
-          {/* Status */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={questionStatus}
-                onChange={(e) => setQuestionStatus(e.target.checked)}
-                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm text-gray-700">Active</span>
-            </label>
-          </div>
-
-          {/* Show Answers Button */}
-          <div className="flex justify-start gap-3 mt-6">
-            <Button onClick={handleShowAnswers} icon={plusIcon} iconAlt="Show Answers" size="md">
-              Show Answers
-            </Button>
           </div>
         </div>
 
-        {/* Answer List Table */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Answer List</h2>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Content
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Is Correct
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {answers.map((answer) => (
-                  <tr key={answer.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-700">{answer.content}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{answer.isCorrect}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{answer.status}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEditAnswer(answer.id)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <img src={editIcon} alt="Edit" className="w-5 h-5" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAnswer(answer.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <img src={deleteIcon} alt="Delete" className="w-5 h-5" style={{ filter: 'invert(27%) sepia(98%) saturate(7426%) hue-rotate(358deg) brightness(95%) contrast(118%)' }} />
-                        </button>
-                      </div>
-                    </td>
+        {/* Answer List Table - Show when button clicked */}
+        {showAnswerList && (
+          <>
+            <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Answer List</h2>
+                <Button 
+                  variant="primary" 
+                  onClick={() => {}}
+                  icon={plusIcon}
+                  iconAlt="Add"
+                  size="sm"
+                >
+                  Add
+                </Button>
+              </div>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Content
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Is Correct
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Add Button */}
-          <div className="flex justify-end gap-3 mt-6">
-            <Button icon={plusIcon} iconAlt="Add" size="md">
-              Add
-            </Button>
-          </div>
-        </div>
-
-        {/* Add Answer Form */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Add Answer</h2>
-
-          <div className="grid grid-cols-1 gap-4">
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <input
-                type="text"
-                value={answerDescription}
-                onChange={(e) => setAnswerDescription(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {answers.map((answer, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {answer.content}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={answer.isCorrect ? 'text-green-600' : 'text-red-600'}>
+                          {answer.isCorrect ? 'True' : 'False'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className="text-green-600">Yes</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleEditAnswer(index)}
+                          className="inline-block mr-2"
+                        >
+                          <img 
+                            src={editIcon} 
+                            alt="Edit" 
+                            className="w-5 h-5"
+                            style={{ filter: 'invert(38%) sepia(95%) saturate(1789%) hue-rotate(193deg) brightness(95%) contrast(101%)' }}
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAnswer(index)}
+                          className="inline-block"
+                        >
+                          <img 
+                            src={deleteIcon} 
+                            alt="Delete" 
+                            className="w-5 h-5"
+                            style={{ filter: 'invert(19%) sepia(98%) saturate(7466%) hue-rotate(359deg) brightness(95%) contrast(119%)' }}
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
 
-          {/* Is Correct and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Is Correct
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isCorrect}
-                  onChange={(e) => setIsCorrect(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            {/* Add Answer Form */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold mb-4">Add Answer</h2>
+              <div className="space-y-4">
+                <Textarea
+                  label="Description"
+                  value={answerDescription}
+                  onChange={(e) => setAnswerDescription(e.target.value)}
+                  placeholder="Enter your email"
+                  rows={3}
                 />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={answerStatus}
-                  onChange={(e) => setAnswerStatus(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
-            </div>
-          </div>
 
-          {/* Form Actions */}
-          <div className="flex justify-end gap-3 mt-6">
-            <Button onClick={handleCancelAnswer} variant="secondary" icon={reloadIcon} iconAlt="Cancel" size="lg">
-              Cancel
-            </Button>
-            <Button onClick={handleSaveAnswer} icon={saveIcon} iconAlt="Save" size="lg">
-              Save
-            </Button>
-          </div>
-        </div>
+                <Input
+                  label=""
+                  value={answerEmail}
+                  onChange={(e) => setAnswerEmail(e.target.value)}
+                  placeholder="Enter your email"
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={answerIsCorrect}
+                        onChange={(e) => setAnswerIsCorrect(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Is Correct</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={answerActive}
+                        onChange={(e) => setAnswerActive(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Status</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="secondary" 
+                    onClick={resetAnswerForm}
+                    size="md"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    onClick={handleSaveAnswer}
+                    icon={saveIcon}
+                    iconAlt="Save"
+                    size="md"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </AdminLayout>
   );

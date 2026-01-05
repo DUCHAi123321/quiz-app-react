@@ -1,7 +1,10 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import QuizCard from '@/components/QuizCard';
 import Button from '@/components/Button';
+import { useQuiz } from '@/hooks/useQuiz';
+import { SkeletonList } from '@/components/Skeleton';
 import quizIllustration from '@/assets/images/quiz-bg-01.png';
 import map1 from '@/assets/images/map.png';
 import map2 from '@/assets/images/map2.png';
@@ -9,40 +12,32 @@ import map3 from '@/assets/images/map3.png';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { loading, quizzes: quizzesData, fetchQuizzes } = useQuiz();
 
-  // Sample quiz data
-  const quizzes = [
-    {
-      id: '1',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      thumbnail: map1,
-    },
-    {
-      id: '2',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      thumbnail: map2,
-    },
-    {
-      id: '3',
-      title: 'Capitals of Country',
-      description: 'Test your knowledge of country capitals',
-      duration: '15m',
-      thumbnail: map3,
-    },
-  ];
+  // Fetch quizzes on component mount - only first 3 for homepage
+  useEffect(() => {
+    fetchQuizzes({ page: 0, size: 3, sort: 'createdAt', direction: 'DESC' }).catch(() => {
+      // Silently handle error - user might not be authenticated
+      // This is fine for the homepage as quizzes are optional to display
+    });
+  }, []);
+
+  // Fallback images for quizzes
+  const thumbnails = [map1, map2, map3];
 
   const handleStartQuiz = (quizId: string) => {
-    console.log('Starting quiz:', quizId);
-    // Navigate to quiz page
     navigate(`/quizzes/${quizId}`);
   };
 
   const handleTakeQuiz = () => {
     navigate('/quizzes');
+  };
+
+  // Helper function to determine quiz difficulty based on question count
+  const getDifficulty = (questionCount: number): string => {
+    if (questionCount > 20) return 'Hard';
+    if (questionCount > 10) return 'Medium';
+    return 'Easy';
   };
 
   return (
@@ -87,15 +82,30 @@ const HomePage = () => {
           </div>
 
           {/* Quiz Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {quizzes.map((quiz) => (
-              <QuizCard
-                key={quiz.id}
-                {...quiz}
-                onStart={() => handleStartQuiz(quiz.id)}
-              />
-            ))}
-          </div>
+          {loading && <SkeletonList count={3} />}
+          
+          {!loading && quizzesData && quizzesData.content.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {quizzesData.content.map((quiz, index) => (
+                <QuizCard
+                  key={quiz.id}
+                  id={quiz.id}
+                  title={quiz.title}
+                  description={quiz.description}
+                  duration={`${quiz.durationMinutes}m`}
+                  difficulty={getDifficulty(quiz.questions.length)}
+                  thumbnail={thumbnails[index % thumbnails.length]}
+                  onStart={() => handleStartQuiz(quiz.id)}
+                />
+              ))}
+            </div>
+          )}
+          
+          {!loading && (!quizzesData || quizzesData.content.length === 0) && (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No quizzes available at the moment.</p>
+            </div>
+          )}
         </div>
       </section>
     </MainLayout>

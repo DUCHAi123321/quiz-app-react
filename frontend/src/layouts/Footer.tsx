@@ -80,7 +80,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-3 pt-2 border-t border-gray-200 text-center text-sm text-gray-600">
-          <p>© May 2024 - ReactJS 19</p>
+          <p>© {new Date().getFullYear()} - ReactJS 19</p>
         </div>
       </div>
     </footer>

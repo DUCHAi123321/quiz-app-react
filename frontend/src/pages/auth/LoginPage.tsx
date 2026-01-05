@@ -1,59 +1,72 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import toast, { Toaster } from 'react-hot-toast';
+import AuthLayout from '@/layouts/AuthLayout';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { ROUTES } from '@/constants';
+import { loginSchema, type LoginFormData } from '@/schemas/formSchemas';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuthContext();
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // TODO: Implement login logic with API
-    console.log('Login:', { username, password });
-    
-    // Mock delay
-    setTimeout(() => {
-      setIsLoading(false);
-      // navigate(ROUTES.HOME);
-    }, 1000);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login(data);
+      toast.success('Login successful!');
+      
+      // Get updated user from localStorage after login
+      const savedUser = localStorage.getItem('user');
+      const loggedInUser = savedUser ? JSON.parse(savedUser) : null;
+      
+      // Redirect based on user role
+      if (loggedInUser?.roles.includes('ADMIN')) {
+        navigate('/management');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      toast.error('Login failed. Please check your credentials.');
+    }
   };
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: "url('/background.png')" }}
-    >
-      {/* Login Card */}
-      <div className="relative z-10 bg-white rounded-lg shadow-2xl p-8 max-w-md w-full">
+    <>
+      <Toaster position="top-right" />
+      <AuthLayout>
         <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Login
         </h1>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <Input
-            label="Username"
-            type="text"
-            placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            autoComplete="username"
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            error={errors.email?.message}
+            autoComplete="email"
+            {...register('email')}
           />
 
           <Input
             label="Password"
             type="password"
             placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            error={errors.password?.message}
             autoComplete="current-password"
+            {...register('password')}
           />
 
           <div className="flex gap-3 mb-4">
@@ -62,6 +75,7 @@ const LoginPage = () => {
               variant="secondary"
               onClick={() => navigate(ROUTES.HOME)}
               className="flex-1"
+              disabled={isLoading}
             >
               Back to Home
             </Button>
@@ -94,8 +108,8 @@ const LoginPage = () => {
             </Link>
           </p>
         </div>
-      </div>
-    </main>
+      </AuthLayout>
+    </>
   );
 };
 
