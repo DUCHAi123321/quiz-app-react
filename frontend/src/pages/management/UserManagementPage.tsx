@@ -323,14 +323,16 @@ const UserManagementPage = () => {
           </div>
 
           {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={users?.totalPages || 0}
-            totalItems={users?.totalElements || 0}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+          {users && users.totalElements > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={users?.totalPages || 0}
+              totalItems={users?.totalElements || 0}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
+          )}
         </div>
 
         {/* Create/Edit Form */}

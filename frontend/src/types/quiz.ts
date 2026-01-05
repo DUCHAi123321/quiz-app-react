@@ -1,4 +1,4 @@
-import { QuestionResponse } from './question';
+import type { QuestionResponse } from './question';
 
 export interface QuizResponse {
   id: string;

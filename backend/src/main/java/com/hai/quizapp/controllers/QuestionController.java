@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hai.quizapp.dtos.PageResponseDTO;
 import com.hai.quizapp.dtos.questions.QuestionRequest;
 import com.hai.quizapp.dtos.questions.QuestionResponse;
+import com.hai.quizapp.enums.QuestionType;
 import com.hai.quizapp.services.QuestionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,7 +58,7 @@ public class QuestionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @Operation(summary = "Get all questions", description = "Retrieves all active questions with pagination and sorting")
+    @Operation(summary = "Get all questions", description = "Retrieves all active questions with pagination, sorting and optional search")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Questions retrieved successfully")
     })
@@ -70,12 +71,24 @@ public class QuestionController {
             @Parameter(description = "Sort field (e.g., createdAt, content)")
             @RequestParam(defaultValue = "createdAt") String sort,
             @Parameter(description = "Sort direction (ASC or DESC)")
-            @RequestParam(defaultValue = "DESC") String direction) {
+            @RequestParam(defaultValue = "DESC") String direction,
+            @Parameter(description = "Search by content")
+            @RequestParam(required = false) String content,
+            @Parameter(description = "Filter by type")
+            @RequestParam(required = false) QuestionType type,
+            @Parameter(description = "Filter by active status")
+            @RequestParam(required = false) Boolean isActive) {
 
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
 
-        Page<QuestionResponse> questions = questionService.getAllQuestions(pageable);
+        Page<QuestionResponse> questions;
+        if (content != null || type != null || isActive != null) {
+            questions = questionService.searchQuestions(content, type, isActive, pageable);
+        } else {
+            questions = questionService.getAllQuestions(pageable);
+        }
+
         PageResponseDTO<QuestionResponse> response = PageResponseDTO.from(questions);
         return ResponseEntity.ok(response);
     }

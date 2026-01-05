@@ -7,12 +7,15 @@ import org.springframework.data.domain.Pageable;
 
 import com.hai.quizapp.dtos.questions.QuestionRequest;
 import com.hai.quizapp.dtos.questions.QuestionResponse;
+import com.hai.quizapp.enums.QuestionType;
 
 public interface QuestionService {
 
     QuestionResponse createQuestion(QuestionRequest request);
 
     Page<QuestionResponse> getAllQuestions(Pageable pageable);
+
+    Page<QuestionResponse> searchQuestions(String content, QuestionType type, Boolean isActive, Pageable pageable);
 
     QuestionResponse getQuestionById(UUID id);
 

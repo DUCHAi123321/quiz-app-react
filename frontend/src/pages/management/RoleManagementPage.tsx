@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 import Button from '@/components/Button';
 import Pagination from '@/components/Pagination';
+import { useRole } from '@/hooks/useRole';
+import type { RoleRequest } from '@/types/role';
+import { Toaster } from 'react-hot-toast';
 import plusIcon from '@/assets/icons/plus-icon.png';
 import reloadIcon from '@/assets/icons/reload-icon.png';
 import searchIcon from '@/assets/icons/search-icon.png';
@@ -9,81 +12,117 @@ import editIcon from '@/assets/icons/edit-icon.png';
 import deleteIcon from '@/assets/icons/delete-icon.png';
 import saveIcon from '@/assets/icons/save-icon.png';
 
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-  status: boolean;
-}
-
 const RoleManagementPage = () => {
-  const [searchName, setSearchName] = useState('');
-  const [searchStatus, setSearchStatus] = useState(false);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { loading, roles, fetchRoles, searchRoles, createRole, updateRole, deleteRole } = useRole();
+  
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Search filters
+  const [searchName, setSearchName] = useState('');
+  const [searchStatus, setSearchStatus] = useState(true);
 
   // Form states
   const [roleName, setRoleName] = useState('');
   const [roleDescription, setRoleDescription] = useState('');
-  const [status, setStatus] = useState(false);
+  const [status, setStatus] = useState(true);
 
-  // Sample role data
-  const roles: Role[] = [
-    {
-      id: '1',
-      name: 'Admin',
-      description: 'Full Access',
-      status: true,
-    },
-    {
-      id: '2',
-      name: 'Editor',
-      description: 'Editable',
-      status: true,
-    },
-    {
-      id: '3',
-      name: 'User',
-      description: 'Customer',
-      status: true,
-    },
-  ];
+  // Fetch roles on mount and page change
+  useEffect(() => {
+    loadRoles();
+  }, [currentPage, itemsPerPage]);
+
+  const loadRoles = () => {
+    fetchRoles({ 
+      page: currentPage - 1, 
+      size: itemsPerPage, 
+      sort: 'createdAt', 
+      direction: 'DESC' 
+    });
+  };
 
   const handleSearch = () => {
-    console.log('Searching:', { searchName, searchStatus });
+    setCurrentPage(1);
+    const searchParams: any = {
+      page: 0,
+      size: itemsPerPage,
+      sort: 'createdAt',
+      direction: 'DESC'
+    };
+    
+    if (searchName && searchName.trim()) {
+      searchParams.name = searchName.trim();
+    }
+    
+    searchParams.active = searchStatus;
+    
+    console.log('Search params:', searchParams);
+    searchRoles(searchParams);
   };
 
   const handleClear = () => {
     setSearchName('');
-    setSearchStatus(false);
+    setSearchStatus(true);
+    setCurrentPage(1);
+    loadRoles();
   };
 
-  const handleSave = () => {
-    console.log('Saving role:', {
-      roleName,
-      roleDescription,
-      status,
-    });
+  const handleSave = async () => {
+    if (!roleName.trim()) {
+      return;
+    }
+
+    const roleData: RoleRequest = {
+      name: roleName,
+      description: roleDescription || undefined,
+      active: status,
+    };
+
+    try {
+      if (editingId) {
+        await updateRole(editingId, roleData);
+      } else {
+        await createRole(roleData);
+      }
+      handleCancel();
+      loadRoles();
+    } catch (error) {
+      // Error handled in hook
+    }
   };
 
   const handleCancel = () => {
     setRoleName('');
     setRoleDescription('');
-    setStatus(false);
+    setStatus(true);
+    setEditingId(null);
   };
 
   const handleEdit = (roleId: string) => {
-    console.log('Edit role:', roleId);
+    const role = roles?.content.find(r => r.id === roleId);
+    if (role) {
+      setRoleName(role.name);
+      setRoleDescription(role.description || '');
+      setStatus(role.active);
+      setEditingId(roleId);
+    }
   };
 
-  const handleDelete = (roleId: string) => {
-    console.log('Delete role:', roleId);
+  const handleDelete = async (roleId: string) => {
+    if (confirm('Are you sure you want to delete this role?')) {
+      try {
+        await deleteRole(roleId);
+        loadRoles();
+      } catch (error) {
+        // Error handled in hook
+      }
+    }
   };
-
-  const totalPages = Math.ceil(roles.length / itemsPerPage);
 
   return (
     <AdminLayout>
+      <Toaster position="top-right" />
       <div className="p-6">
         {/* Role Management Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -158,31 +197,45 @@ const RoleManagementPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {roles.map((role) => (
-                  <tr key={role.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-700">{role.name}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{role.description}</td>
-                    <td className="py-3 px-4 text-sm text-gray-700">
-                      {role.status ? 'Yes' : 'No'}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(role.id)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <img src={editIcon} alt="Edit" className="w-5 h-5" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(role.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <img src={deleteIcon} alt="Delete" className="w-5 h-5" style={{ filter: 'invert(27%) sepia(98%) saturate(7426%) hue-rotate(358deg) brightness(95%) contrast(118%)' }} />
-                        </button>
-                      </div>
+                {loading ? (
+                  <tr>
+                    <td colSpan={4} className="py-3 px-4 text-center text-sm text-gray-500">
+                      Loading...
                     </td>
                   </tr>
-                ))}
+                ) : roles && roles.content.length > 0 ? (
+                  roles.content.map((role) => (
+                    <tr key={role.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4 text-sm text-gray-700">{role.name}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">{role.description || '-'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">
+                        {role.active ? 'Yes' : 'No'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(role.id)}
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <img src={editIcon} alt="Edit" className="w-5 h-5" style={{ filter: 'invert(47%) sepia(87%) saturate(2659%) hue-rotate(193deg) brightness(95%) contrast(101%)' }} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(role.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <img src={deleteIcon} alt="Delete" className="w-5 h-5" style={{ filter: 'invert(27%) sepia(98%) saturate(7426%) hue-rotate(358deg) brightness(95%) contrast(118%)' }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="py-3 px-4 text-center text-sm text-gray-500">
+                      No roles found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -190,8 +243,8 @@ const RoleManagementPage = () => {
           {/* Pagination */}
           <Pagination
             currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={roles.length}
+            totalPages={roles?.totalPages || 0}
+            totalItems={roles?.totalElements || 0}
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={setItemsPerPage}
@@ -200,7 +253,9 @@ const RoleManagementPage = () => {
 
         {/* Add Role Form */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Add Role</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">
+            {editingId ? 'Edit Role' : 'Add Role'}
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Name */}
@@ -212,8 +267,9 @@ const RoleManagementPage = () => {
                 type="text"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
-                placeholder="Enter role name"
+                placeholder="Enter role name (e.g., ROLE_ADMIN)"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
 
@@ -226,7 +282,7 @@ const RoleManagementPage = () => {
                 type="text"
                 value={roleDescription}
                 onChange={(e) => setRoleDescription(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Enter role description"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -253,8 +309,8 @@ const RoleManagementPage = () => {
             <Button onClick={handleCancel} variant="secondary" icon={reloadIcon} iconAlt="Cancel" size="lg">
               Cancel
             </Button>
-            <Button onClick={handleSave} icon={saveIcon} iconAlt="Save" size="lg">
-              Save
+            <Button onClick={handleSave} disabled={loading} icon={saveIcon} iconAlt="Save" size="lg">
+              {loading ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </div>

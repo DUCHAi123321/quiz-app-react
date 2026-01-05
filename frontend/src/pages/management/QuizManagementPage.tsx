@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react';
 import AdminLayout from '@/layouts/AdminLayout';
 import Button from '@/components/Button';
 import Pagination from '@/components/Pagination';
-import Input from '@/components/Input';
-import Textarea from '@/components/Textarea';
 import { useQuiz } from '@/hooks/useQuiz';
 import type { QuizRequest } from '@/types/quiz';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import editIcon from '@/assets/icons/edit-icon.png';
 import deleteIcon from '@/assets/icons/delete-icon.png';
 import plusIcon from '@/assets/icons/plus-icon.png';
@@ -15,7 +13,7 @@ import searchIcon from '@/assets/icons/search-icon.png';
 import saveIcon from '@/assets/icons/save-icon.png';
 
 const QuizManagementPage = () => {
-  const { loading, quizzes, fetchQuizzes, createQuiz, updateQuiz, deleteQuiz } = useQuiz();
+  const { loading, quizzes, fetchQuizzes, searchQuizzes, createQuiz, updateQuiz, deleteQuiz } = useQuiz();
   
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -116,8 +114,21 @@ const QuizManagementPage = () => {
 
   const handleSearch = () => {
     setCurrentPage(1);
-    // TODO: Implement search functionality when backend API is ready
-    console.log('Search:', { searchName, filterActive });
+    const searchParams: any = {
+      page: 0,
+      size: itemsPerPage,
+      sort: 'createdAt',
+      direction: 'DESC'
+    };
+    
+    if (searchName && searchName.trim()) {
+      searchParams.title = searchName.trim();
+    }
+    
+    searchParams.active = filterActive;
+    
+    console.log('Search params:', searchParams);
+    searchQuizzes(searchParams);
   };
 
   return (

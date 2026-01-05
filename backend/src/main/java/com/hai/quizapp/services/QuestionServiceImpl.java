@@ -51,6 +51,32 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<QuestionResponse> searchQuestions(String content, com.hai.quizapp.enums.QuestionType type, Boolean isActive, Pageable pageable) {
+        Page<Question> questions;
+
+        if (content != null && !content.isEmpty() && type != null && isActive != null) {
+            questions = questionRepository.findByContentContainingIgnoreCaseAndTypeAndIsActive(content, type, isActive, pageable);
+        } else if (content != null && !content.isEmpty() && type != null) {
+            questions = questionRepository.findByContentContainingIgnoreCaseAndType(content, type, pageable);
+        } else if (content != null && !content.isEmpty() && isActive != null) {
+            questions = questionRepository.findByContentContainingIgnoreCaseAndIsActive(content, isActive, pageable);
+        } else if (type != null && isActive != null) {
+            questions = questionRepository.findByTypeAndIsActive(type, isActive, pageable);
+        } else if (content != null && !content.isEmpty()) {
+            questions = questionRepository.findByContentContainingIgnoreCase(content, pageable);
+        } else if (type != null) {
+            questions = questionRepository.findByType(type, pageable);
+        } else if (isActive != null) {
+            questions = questionRepository.findByIsActive(isActive, pageable);
+        } else {
+            questions = questionRepository.findAll(pageable);
+        }
+
+        return questions.map(questionMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public QuestionResponse getQuestionById(UUID id) {
         Question question = questionRepository.findByIdWithAnswers(id)
                 .orElseThrow(() -> new ResourceNotFoundException(QUESTION_NOT_FOUND + id));

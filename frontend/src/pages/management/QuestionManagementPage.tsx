@@ -19,7 +19,7 @@ const QuestionManagementPage = () => {
   const { loading, questions, fetchQuestions, createQuestion, updateQuestion, deleteQuestion } = useQuestion();
   
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
   
@@ -63,8 +63,25 @@ const QuestionManagementPage = () => {
   };
 
   const handleSearch = () => {
-    // Implement search logic
-    loadQuestions();
+    setCurrentPage(1);
+    const searchParams: any = {
+      page: 0,
+      size: itemsPerPage,
+      sort: 'createdAt',
+      direction: 'DESC'
+    };
+    
+    if (searchName && searchName.trim()) {
+      searchParams.content = searchName.trim();
+    }
+    
+    if (searchType) {
+      searchParams.type = searchType;
+    }
+    
+    searchParams.isActive = searchActive;
+    
+    fetchQuestions(searchParams);
   };
 
   const handleClearSearch = () => {
@@ -72,6 +89,21 @@ const QuestionManagementPage = () => {
     setSearchType('');
     setSearchActive(true);
     loadQuestions();
+  };
+
+  const handleEditQuestion = (id: string) => {
+    const question = questions?.content.find(q => q.id === id);
+    if (question) {
+      setQuestionContent(question.content);
+      setQuestionType(question.type);
+      setQuestionActive(question.isActive);
+      setEditingQuestionId(id);
+      // Load answers if available
+      if (question.answers && question.answers.length > 0) {
+        setAnswers(question.answers.map(a => ({ content: a.content, isCorrect: a.isCorrect })));
+        setShowAnswerList(true);
+      }
+    }
   };
 
   const handleCreateQuestion = async () => {
@@ -84,7 +116,7 @@ const QuestionManagementPage = () => {
       content: questionContent,
       type: questionType,
       score: 1,
-      answers: [],
+      answers: answers,
     };
 
     try {
@@ -100,16 +132,6 @@ const QuestionManagementPage = () => {
     }
   };
 
-  const handleEditQuestion = (id: string) => {
-    const question = questions?.content.find(q => q.id === id);
-    if (question) {
-      setQuestionContent(question.content);
-      setQuestionType(question.type);
-      setQuestionActive(question.isActive);
-      setEditingQuestionId(id);
-    }
-  };
-
   const handleDeleteQuestion = async (id: string) => {
     if (confirm('Are you sure you want to delete this question?')) {
       try {
@@ -122,13 +144,18 @@ const QuestionManagementPage = () => {
   };
 
   const handleSaveAnswer = () => {
-    // Implement answer save logic
+    if (!answerDescription.trim()) {
+      toast.error('Answer content is required');
+      return;
+    }
+    
     const newAnswer: AnswerRequest = {
       content: answerDescription,
       isCorrect: answerIsCorrect,
     };
     setAnswers([...answers, newAnswer]);
     resetAnswerForm();
+    toast.success('Answer added successfully');
   };
 
   const handleEditAnswer = (index: number) => {
@@ -318,14 +345,15 @@ const QuestionManagementPage = () => {
           </table>
 
           {/* Pagination */}
-          {questions && questions.totalPages > 1 && (
-            <div className="p-4 border-t flex justify-center">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={questions.totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+          {questions && questions.totalElements > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={questions?.totalPages || 0}
+              totalItems={questions?.totalElements || 0}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
           )}
         </div>
 
