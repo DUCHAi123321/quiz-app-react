@@ -3,49 +3,41 @@ import type { ApiResponse } from '@/types/auth';
 import type { PageResponse, PaginationParams } from '@/types/common';
 import type { QuizRequest, QuizResponse, QuizSearchParams } from '@/types/quiz';
 
-// Get all quizzes with pagination
 export const getAllQuizzes = async (params?: PaginationParams): Promise<PageResponse<QuizResponse>> => {
   const response = await apiClient.get<ApiResponse<PageResponse<QuizResponse>>>('/quizzes', { params });
   return response.data.data;
 };
 
-// Search quizzes by title and/or active status
 export const searchQuizzes = async (params: QuizSearchParams): Promise<PageResponse<QuizResponse>> => {
   const response = await apiClient.get<ApiResponse<PageResponse<QuizResponse>>>('/quizzes/search', { params });
   return response.data.data;
 };
 
-// Get quiz by ID
 export const getQuizById = async (id: string): Promise<QuizResponse> => {
   const response = await apiClient.get<ApiResponse<QuizResponse>>(`/quizzes/${id}`);
   return response.data.data;
 };
 
-// Create a new quiz (Admin only)
 export const createQuiz = async (data: QuizRequest): Promise<QuizResponse> => {
   const response = await apiClient.post<ApiResponse<QuizResponse>>('/quizzes', data);
   return response.data.data;
 };
 
-// Update quiz (Admin only)
 export const updateQuiz = async (id: string, data: QuizRequest): Promise<QuizResponse> => {
   const response = await apiClient.put<ApiResponse<QuizResponse>>(`/quizzes/${id}`, data);
   return response.data.data;
 };
 
-// Add questions to quiz (Admin only)
 export const addQuestionsToQuiz = async (id: string, questionIds: string[]): Promise<QuizResponse> => {
   const response = await apiClient.post<ApiResponse<QuizResponse>>(`/quizzes/${id}/questions`, questionIds);
   return response.data.data;
 };
 
-// Remove questions from quiz (Admin only)
 export const removeQuestionsFromQuiz = async (id: string, questionIds: string[]): Promise<QuizResponse> => {
   const response = await apiClient.delete<ApiResponse<QuizResponse>>(`/quizzes/${id}/questions`, { data: questionIds });
   return response.data.data;
 };
 
-// Delete quiz - soft delete (Admin only)
 export const deleteQuiz = async (id: string): Promise<void> => {
   await apiClient.delete(`/quizzes/${id}`);
 };

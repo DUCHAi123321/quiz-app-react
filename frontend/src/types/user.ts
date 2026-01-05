@@ -1,4 +1,3 @@
-// Role types as const object (better than enum with erasableSyntaxOnly)
 export const RoleEnum = {
   ROLE_ADMIN: 'ROLE_ADMIN',
   ROLE_USER: 'ROLE_USER',

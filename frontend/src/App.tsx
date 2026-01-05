@@ -16,7 +16,6 @@ const ForbiddenPage = lazy(() => import('./pages/error/ForbiddenPage'))
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'))
 
-// Lazy load management pages (admin)
 const UserManagementPage = lazy(() => import('./pages/management/UserManagementPage'))
 const QuizManagementPage = lazy(() => import('./pages/management/QuizManagementPage'))
 const QuestionManagementPage = lazy(() => import('./pages/management/QuestionManagementPage'))
@@ -37,7 +36,6 @@ function App() {
     <AuthProvider>
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
-          {/* Nơi định nghĩa các luồng đi của trang web */}
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
@@ -49,7 +47,6 @@ function App() {
             <Route path="/auth/login" element={<LoginPage />} />
             <Route path="/auth/register" element={<RegisterPage />} />
             
-            {/* Protected Admin Routes - Require ADMIN role */}
             <Route
               path="/management"
               element={

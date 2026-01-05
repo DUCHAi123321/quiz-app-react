@@ -1,4 +1,3 @@
-// Question types as const object (better than enum with erasableSyntaxOnly)
 export const QuestionType = {
   SINGLE_CHOICE: 'SINGLE_CHOICE',
   MULTIPLE_CHOICE: 'MULTIPLE_CHOICE',

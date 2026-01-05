@@ -17,7 +17,6 @@ export const useQuiz = () => {
       return data;
     } catch (error) {
       console.error('Failed to fetch quizzes:', error);
-      // Don't show toast for fetch errors - let the component decide
       throw error;
     } finally {
       setLoading(false);
@@ -32,7 +31,6 @@ export const useQuiz = () => {
       return data;
     } catch (error) {
       console.error('Failed to search quizzes:', error);
-      // Don't show toast for search errors - let the component decide
       throw error;
     } finally {
       setLoading(false);

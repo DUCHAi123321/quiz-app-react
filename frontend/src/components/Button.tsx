@@ -51,7 +51,7 @@ const Button = ({
     >
       {isLoading ? (
         <span className="flex items-center justify-center gap-2">
-          <span className={`inline-block ${iconSizeStyles[size]} animate-spin rounded-full border-2 border-solid border-current border-r-transparent`}></span>
+          <span className={`inline-block ${iconSizeStyles[size]} animate-spin rounded-full border-2 border-solid border-current border-r-transparent`}></span>{' '}
           Loading...
         </span>
       ) : (

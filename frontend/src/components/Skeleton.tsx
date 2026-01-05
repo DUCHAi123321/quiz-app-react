@@ -1,5 +1,3 @@
-// Skeleton components for loading states
-
 export const SkeletonCard = () => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
     {/* Image skeleton */}
@@ -87,10 +85,8 @@ export const SkeletonText = ({
 
 export const SkeletonProfile = () => (
   <div className="flex items-center gap-4 animate-pulse">
-    {/* Avatar */}
     <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
     
-    {/* Info */}
     <div className="flex-1 space-y-2">
       <div className="h-4 bg-gray-300 rounded w-32"></div>
       <div className="h-3 bg-gray-200 rounded w-48"></div>

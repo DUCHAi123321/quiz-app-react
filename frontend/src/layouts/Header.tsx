@@ -10,7 +10,6 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -40,7 +39,6 @@ const Header = () => {
             <Link to={ROUTES.QUIZZES} className="text-gray-700 hover:text-primary transition-colors">
               Quizzes
             </Link>
-             {/* Show Management link only for Admin users */}
             {user && user.roles.includes('ROLE_ADMIN') && (
               <Link to="/management" className="text-gray-700 hover:text-primary transition-colors">
                 Management
@@ -55,7 +53,6 @@ const Header = () => {
            
           </nav>
 
-          {/* Right Side - Login/Register or User Avatar */}
           {user ? (
             /* User Avatar with Dropdown */
             <div className="relative" ref={dropdownRef}>

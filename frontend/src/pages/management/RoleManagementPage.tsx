@@ -31,16 +31,12 @@ const RoleManagementPage = () => {
   // Fetch roles on mount and page change
   useEffect(() => {
     const loadData = async () => {
-      try {
-        await fetchRoles({ 
-          page: currentPage - 1, 
-          size: itemsPerPage, 
-          sort: 'name', 
-          direction: 'ASC' 
-        });
-      } catch (err) {
-        // Error handled in hook
-      }
+      await fetchRoles({ 
+        page: currentPage - 1, 
+        size: itemsPerPage, 
+        sort: 'name', 
+        direction: 'ASC' 
+      });
     };
     
     loadData();
@@ -65,7 +61,7 @@ const RoleManagementPage = () => {
       direction: 'ASC'
     };
     
-    if (searchName && searchName.trim()) {
+    if (searchName?.trim()) {
       searchParams.name = searchName.trim();
     }
     
@@ -92,17 +88,13 @@ const RoleManagementPage = () => {
       active: status,
     };
 
-    try {
-      if (editingId) {
-        await updateRole(editingId, roleData);
-      } else {
-        await createRole(roleData);
-      }
-      handleCancel();
-      loadRoles();
-    } catch (error) {
-      // Error handled in hook
+    if (editingId) {
+      await updateRole(editingId, roleData);
+    } else {
+      await createRole(roleData);
     }
+    handleCancel();
+    loadRoles();
   };
 
   const handleCancel = () => {
@@ -124,12 +116,8 @@ const RoleManagementPage = () => {
 
   const handleDelete = async (roleId: string) => {
     if (confirm('Are you sure you want to delete this role?')) {
-      try {
-        await deleteRole(roleId);
-        loadRoles();
-      } catch (error) {
-        // Error handled in hook
-      }
+      await deleteRole(roleId);
+      loadRoles();
     }
   };
 
@@ -144,10 +132,11 @@ const RoleManagementPage = () => {
           {/* Search Form */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="searchRoleName" className="block text-sm font-medium text-gray-700 mb-2">
                 Name
               </label>
               <input
+                id="searchRoleName"
                 type="text"
                 value={searchName}
                 onChange={(e) => setSearchName(e.target.value)}
@@ -156,18 +145,19 @@ const RoleManagementPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="searchRoleStatus" className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
-              <label className="flex items-center gap-2 h-9 px-4 rounded-md w-full">
+              <div className="flex items-center gap-2 h-9 px-4 rounded-md w-full">
                 <input
+                  id="searchRoleStatus"
                   type="checkbox"
                   checked={searchStatus}
                   onChange={(e) => setSearchStatus(e.target.checked)}
                   className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
+                <label htmlFor="searchRoleStatus" className="text-sm text-gray-700">Active</label>
+              </div>
             </div>
           </div>
 
@@ -210,13 +200,14 @@ const RoleManagementPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading ? (
+                {loading && (
                   <tr>
                     <td colSpan={4} className="py-3 px-4 text-center text-sm text-gray-500">
                       Loading...
                     </td>
                   </tr>
-                ) : roles && roles.content.length > 0 ? (
+                )}
+                {!loading && roles?.content?.length > 0 && (
                   roles.content.map((role) => (
                     <tr key={role.id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4 text-sm text-gray-700">{role.name}</td>
@@ -242,7 +233,8 @@ const RoleManagementPage = () => {
                       </td>
                     </tr>
                   ))
-                ) : (
+                )}
+                {!loading && !roles?.content?.length && (
                   <tr>
                     <td colSpan={4} className="py-3 px-4 text-center text-sm text-gray-500">
                       No roles found
@@ -275,10 +267,11 @@ const RoleManagementPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="roleName" className="block text-sm font-medium text-gray-700 mb-2">
                 Name
               </label>
               <input
+                id="roleName"
                 type="text"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
@@ -290,10 +283,11 @@ const RoleManagementPage = () => {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="roleDescription" className="block text-sm font-medium text-gray-700 mb-2">
                 Description
               </label>
               <input
+                id="roleDescription"
                 type="text"
                 value={roleDescription}
                 onChange={(e) => setRoleDescription(e.target.value)}
@@ -305,18 +299,19 @@ const RoleManagementPage = () => {
 
           {/* Status */}
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="roleStatus" className="block text-sm font-medium text-gray-700 mb-2">
               Status
             </label>
-            <label className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <input
+                id="roleStatus"
                 type="checkbox"
                 checked={status}
                 onChange={(e) => setStatus(e.target.checked)}
                 className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">Active</span>
-            </label>
+              <label htmlFor="roleStatus" className="text-sm text-gray-700">Active</label>
+            </div>
           </div>
 
           {/* Form Actions */}

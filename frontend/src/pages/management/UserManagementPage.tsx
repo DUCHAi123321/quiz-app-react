@@ -75,21 +75,17 @@ const UserManagementPage = () => {
     };
 
     // Only include password if it's provided (for create or update with new password)
-    if (password && password.trim()) {
+    if (password?.trim()) {
       userData.password = password;
     }
 
-    try {
-      if (editingId) {
-        await updateUser(editingId, userData);
-      } else {
-        await createUser(userData);
-      }
-      resetForm();
-      loadUsers();
-    } catch (error) {
-      // Error handled in hook
+    if (editingId) {
+      await updateUser(editingId, userData);
+    } else {
+      await createUser(userData);
     }
+    resetForm();
+    loadUsers();
   };
 
   const handleEdit = (id: string) => {
@@ -111,12 +107,8 @@ const UserManagementPage = () => {
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this user?')) {
-      try {
-        await deleteUser(id);
-        loadUsers();
-      } catch (error) {
-        // Error handled in hook
-      }
+      await deleteUser(id);
+      loadUsers();
     }
   };
 
@@ -150,7 +142,7 @@ const UserManagementPage = () => {
       direction: 'DESC'
     };
     
-    if (searchName && searchName.trim()) {
+    if (searchName?.trim()) {
       searchParams.name = searchName.trim();
     }
     
@@ -172,10 +164,11 @@ const UserManagementPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="searchName" className="block text-sm font-medium text-gray-700 mb-2">
                 Name
               </label>
               <input
+                id="searchName"
                 type="text"
                 value={searchName}
                 onChange={(e) => setSearchName(e.target.value)}
@@ -184,18 +177,19 @@ const UserManagementPage = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="filterActive" className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
-              <label className="flex items-center gap-2 h-9 px-4 rounded-md w-full">
+              <div className="flex items-center gap-2 h-9 px-4 rounded-md w-full">
                 <input
+                  id="filterActive"
                   type="checkbox"
                   checked={filterActive}
                   onChange={(e) => setFilterActive(e.target.checked)}
                   className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
+                <label htmlFor="filterActive" className="text-sm text-gray-700">Active</label>
+              </div>
             </div>
           </div>
           
@@ -264,13 +258,14 @@ const UserManagementPage = () => {
                 </tr>
               </thead>
               <tbody>
-              {loading ? (
+              {loading && (
                 <tr>
                   <td colSpan={7} className="py-3 px-4 text-center text-sm text-gray-500">
                     Loading...
                   </td>
                 </tr>
-              ) : users && users.content.length > 0 ? (
+              )}
+              {!loading && users?.content && users.content.length > 0 && (
                 users.content.map((user) => (
                   <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4 text-sm text-gray-700">
@@ -311,7 +306,8 @@ const UserManagementPage = () => {
                     </td>
                   </tr>
                 ))
-              ) : (
+              )}
+              {!loading && !users?.content?.length && (
                 <tr>
                   <td colSpan={7} className="py-3 px-4 text-center text-sm text-gray-500">
                     No users found
@@ -344,10 +340,11 @@ const UserManagementPage = () => {
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
                     First Name
                   </label>
                   <input
+                    id="firstName"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -358,10 +355,11 @@ const UserManagementPage = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
                     Last Name
                   </label>
                   <input
+                    id="lastName"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -372,10 +370,11 @@ const UserManagementPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                     Email
                   </label>
                   <input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -386,10 +385,11 @@ const UserManagementPage = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                     User Name
                   </label>
                   <input
+                    id="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -399,10 +399,11 @@ const UserManagementPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                     {editingId ? "New Password (leave blank to keep current)" : "Password"}
                   </label>
                   <input
+                    id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -414,10 +415,11 @@ const UserManagementPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                     Confirm Password
                   </label>
                   <input
+                    id="confirmPassword"
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -429,10 +431,11 @@ const UserManagementPage = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
                     Date of Birth
                   </label>
                   <input
+                    id="dateOfBirth"
                     type="date"
                     value={dateOfBirth}
                     onChange={(e) => setDateOfBirth(e.target.value)}
@@ -442,10 +445,11 @@ const UserManagementPage = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number
                   </label>
                   <input
+                    id="phoneNumber"
                     type="tel"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
@@ -457,18 +461,19 @@ const UserManagementPage = () => {
 
               {/* Status */}
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="activeStatus" className="block text-sm font-medium text-gray-700 mb-2">
                   Status
                 </label>
-                <label className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <input
+                    id="activeStatus"
                     type="checkbox"
                     checked={active}
                     onChange={(e) => setActive(e.target.checked)}
                     className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700">Active</span>
-                </label>
+                  <label htmlFor="activeStatus" className="text-sm text-gray-700">Active</label>
+                </div>
               </div>
 
               {/* Form Actions */}
@@ -483,17 +488,6 @@ const UserManagementPage = () => {
             </form>
           </div>
         )}
-
-        {/* Pagination - Removed from here as it's now inside the table section */}
-        {/* {users && users.totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={users.totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )} */}
       </div>
     </AdminLayout>
   );

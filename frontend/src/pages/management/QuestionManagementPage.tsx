@@ -21,7 +21,6 @@ const QuestionManagementPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
-  const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
   
   // Search fields
   const [searchName, setSearchName] = useState('');
@@ -162,7 +161,6 @@ const QuestionManagementPage = () => {
     const answer = answers[index];
     setAnswerDescription(answer.content);
     setAnswerIsCorrect(answer.isCorrect || false);
-    setEditingAnswerId(index.toString());
   };
 
   const handleDeleteAnswer = (index: number) => {
@@ -182,7 +180,6 @@ const QuestionManagementPage = () => {
     setAnswerEmail('');
     setAnswerIsCorrect(true);
     setAnswerActive(true);
-    setEditingAnswerId(null);
   };
 
   return (

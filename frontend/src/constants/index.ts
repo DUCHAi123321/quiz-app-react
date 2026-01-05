@@ -1,4 +1,3 @@
-// Button variants and styles
 import johnDAvatar from '@/assets/images/JohnD.png';
 import janeAvatar from '@/assets/images/Jane.png';
 import johnSAvatar from '@/assets/images/JohnS.png';
@@ -9,7 +8,6 @@ export const BUTTON_STYLES = {
   danger: 'bg-red-500 hover:bg-red-600 text-white',
 } as const;
 
-// Error page messages
 export const ERROR_MESSAGES = {
   404: {
     title: 'Page not found',
@@ -37,14 +35,12 @@ export const ROUTES = {
   FORBIDDEN: '/forbidden',
 } as const;
 
-// Contact Info
 export const CONTACT_INFO = {
   email: 'quizapp2023@gmail.com',
   phone: '+84 904 111 456',
   address: '123 Xuan Dieu, Bac Tu Liem, Ha Noi, Viet Nam',
 } as const;
 
-// Team Members
 export const TEAM_MEMBERS = [
   {
     id: 1,

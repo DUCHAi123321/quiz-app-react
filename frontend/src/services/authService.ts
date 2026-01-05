@@ -25,7 +25,6 @@ export const authService = {
     try {
       await apiClient.post('/auth/logout');
     } catch (error) {
-      // Even if logout API fails, clear local data
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('accessToken');
